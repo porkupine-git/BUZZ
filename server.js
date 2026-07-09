@@ -1,9 +1,38 @@
 const express = require('express');
 const path = require('path');
 const scraper = require('./scraper');
+const NodeCache = require('node-cache');
 
 const app = express();
 const PORT = process.env.PORT || 7860;
+
+// Initialize Cache
+const apiCache = new NodeCache({ stdTTL: 3600 });
+
+// Caching Middleware
+const cacheMiddleware = (ttlSeconds) => {
+  return (req, res, next) => {
+    if (req.method !== 'GET') return next();
+    
+    const key = req.originalUrl;
+    const cachedResponse = apiCache.get(key);
+    
+    if (cachedResponse) {
+      console.log(`[CACHE HIT] ${key}`);
+      return res.json(cachedResponse);
+    } else {
+      console.log(`[CACHE MISS] ${key}`);
+      res.originalJson = res.json;
+      res.json = (body) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          apiCache.set(key, body, ttlSeconds);
+        }
+        res.originalJson(body);
+      };
+      next();
+    }
+  };
+};
 
 // This is a pure API server, no static files to serve.
 
@@ -19,7 +48,7 @@ app.use((req, res, next) => {
 // ─── API Routes ──────────────────────────────────────────────────────────────
 
 // Search anime
-app.get('/api/search', async (req, res) => {
+app.get('/api/search', cacheMiddleware(86400), async (req, res) => {
   try {
     const keyword = req.query.q;
     if (!keyword) return res.json({ error: 'Missing ?q= parameter' });
@@ -31,7 +60,7 @@ app.get('/api/search', async (req, res) => {
 });
 
 // Get episodes by AniList ID
-app.get('/api/episodes/:anilistId', async (req, res) => {
+app.get('/api/episodes/:anilistId', cacheMiddleware(21600), async (req, res) => {
   try {
     const data = await scraper.getEpisodes(parseInt(req.params.anilistId));
     res.json(data);
@@ -41,7 +70,7 @@ app.get('/api/episodes/:anilistId', async (req, res) => {
 });
 
 // Get show info by Anikoto slug (resolves AniList ID automatically)
-app.get('/api/info/:slug', async (req, res) => {
+app.get('/api/info/:slug', cacheMiddleware(43200), async (req, res) => {
   try {
     const data = await scraper.getInfoBySlug(req.params.slug);
     res.json(data);
@@ -51,7 +80,7 @@ app.get('/api/info/:slug', async (req, res) => {
 });
 
 // Get watch streams
-app.get('/api/watch/:anilistId/:audio/:epNum', async (req, res) => {
+app.get('/api/watch/:anilistId/:audio/:epNum', cacheMiddleware(1800), async (req, res) => {
   try {
     const { anilistId, audio, epNum } = req.params;
     const data = await scraper.getWatch(anilistId, audio, parseInt(epNum));
