@@ -130,23 +130,16 @@ app.use('/api/proxy', async (req, res) => {
 
     if (targetUrl.includes('.m3u8')) {
       const targetBase = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-      const lines = response.data.split('\n');
       
-      const rewritten = lines.map(line => {
+      const rewritten = response.data.split('\n').map(line => {
         const trimmed = line.trim();
         if (trimmed && !trimmed.startsWith('#')) {
           const absoluteUrl = trimmed.startsWith('http') ? trimmed : targetBase + trimmed;
-          // Only proxy sub-playlists (which contain .m3u8) to bypass CORS.
-          // Let the browser fetch raw video segments (.ts) directly from the CDN to bypass Hugging Face bandwidth latency.
-          if (absoluteUrl.includes('.m3u8')) {
-            return `/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}`;
-          }
-          return absoluteUrl;
+          return `/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}`;
         }
         if (trimmed.includes('URI="')) {
           return trimmed.replace(/URI="([^"]+)"/g, (match, uri) => {
             const absoluteUrl = uri.startsWith('http') ? uri : targetBase + uri;
-            // Only proxy key URIs if they are playlists/keys
             return `URI="/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}"`;
           });
         }
