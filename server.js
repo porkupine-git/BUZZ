@@ -5,8 +5,7 @@ const scraper = require('./scraper');
 const app = express();
 const PORT = process.env.PORT || 7860;
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// This is a pure API server, no static files to serve.
 
 // Allow CORS for Anigo2 local testing
 app.use((req, res, next) => {
@@ -128,9 +127,9 @@ app.use('/api/proxy', async (req, res) => {
   }
 });
 
-// SPA fallback — serve index.html for all non-API routes
-app.get('{*path}', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Fallback for root or unknown routes
+app.use((req, res) => {
+  res.json({ status: "ok", message: "Aniko API is running successfully on Hugging Face!" });
 });
 
 app.listen(PORT, () => {
