@@ -63,6 +63,16 @@ async function getJSON(url, extraHeaders = {}, retries = 4) {
 }
 
 // ─── HTML Parsers ────────────────────────────────────────────────────────────
+function decodeHtml(str) {
+  if (!str) return "";
+  return str
+    .replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
 function extractEpisodes(html) {
   const episodes = [];
   const re = /<a\s[^>]*data-id="[^"]*"[^>]*>/g;
@@ -94,8 +104,8 @@ function extractSearchCandidates(html) {
     const imgM = block.match(/<img\s+src="([^"]+)"/);
     results.push({
       slug: m[1],
-      titleEn: enM ? enM[1].trim() : "",
-      titleJp: jpM ? jpM[1].trim() : "",
+      titleEn: enM ? decodeHtml(enM[1].trim()) : "",
+      titleJp: jpM ? decodeHtml(jpM[1].trim()) : "",
       year: yearM ? yearM[1] : "",
       type: typeM ? typeM[1] : "",
       image: imgM ? imgM[1] : null,
@@ -192,8 +202,8 @@ async function searchAnikoto(keyword) {
   for (const m of html.matchAll(/<a class="name d-title" href="https:\/\/anikototv\.to\/watch\/([^"/]+)(?:\/ep-\d+)?" data-jp="([^"]*)">([\s\S]*?)<\/a>/g)) {
     results.push({
       slug: m[1],
-      titleEn: m[3].replace(/<[^>]*>/g, "").trim(),
-      titleJp: m[2].trim(),
+      titleEn: decodeHtml(m[3].replace(/<[^>]*>/g, "").trim()),
+      titleJp: decodeHtml(m[2].trim()),
       year: "", type: "",
     });
   }
