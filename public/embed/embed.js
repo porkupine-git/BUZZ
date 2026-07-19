@@ -147,6 +147,8 @@
   let subtitleData = [];
   let introTime = null;
   let outroTime = null;
+  let hasSkippedIntro = false;
+  let hasSkippedOutro = false;
   let controlsTimer = null;
   let isSeeking = false;
   let savedVolume = 1;
@@ -724,27 +726,32 @@
 
     if (introTime && introTime.end > 0) {
       const inIntro = t >= introTime.start && t < introTime.end;
-      if (inIntro && isAutoSkip) {
+      if (inIntro && isAutoSkip && !hasSkippedIntro) {
         video.currentTime = introTime.end;
+        hasSkippedIntro = true;
         return;
       }
-      skipIntroBtn.classList.toggle("hidden", !inIntro);
-      skipIntroBtn.classList.toggle("visible", inIntro);
+      const shouldShow = inIntro && !hasSkippedIntro;
+      skipIntroBtn.classList.toggle("hidden", !shouldShow);
+      skipIntroBtn.classList.toggle("visible", shouldShow);
     }
 
     if (outroTime && outroTime.end > 0) {
       const inOutro = t >= outroTime.start && t < outroTime.end;
-      if (inOutro && isAutoSkip) {
+      if (inOutro && isAutoSkip && !hasSkippedOutro) {
         video.currentTime = outroTime.end;
+        hasSkippedOutro = true;
         return;
       }
-      skipOutroBtn.classList.toggle("hidden", !inOutro);
-      skipOutroBtn.classList.toggle("visible", inOutro);
+      const shouldShow = inOutro && !hasSkippedOutro;
+      skipOutroBtn.classList.toggle("hidden", !shouldShow);
+      skipOutroBtn.classList.toggle("visible", shouldShow);
     }
   }
 
   skipIntroBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    hasSkippedIntro = true;
     if (introTime) video.currentTime = introTime.end;
     skipIntroBtn.classList.add("hidden");
     skipIntroBtn.classList.remove("visible");
@@ -752,6 +759,7 @@
 
   skipOutroBtn.addEventListener("click", (e) => {
     e.stopPropagation();
+    hasSkippedOutro = true;
     if (outroTime) video.currentTime = outroTime.end;
     skipOutroBtn.classList.add("hidden");
     skipOutroBtn.classList.remove("visible");
