@@ -372,6 +372,29 @@ app.use((req, res) => {
   });
 });
 
+app.get('/api/debug/fs', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  
+  const getFiles = (dir) => {
+    try {
+      return fs.readdirSync(dir).map(f => {
+        const fullPath = path.join(dir, f);
+        return fs.statSync(fullPath).isDirectory() ? `[DIR] ${f}` : f;
+      });
+    } catch (e) {
+      return e.message;
+    }
+  };
+
+  res.json({
+    dirname: __dirname,
+    root: getFiles(__dirname),
+    public: getFiles(path.join(__dirname, 'public')),
+    embed: getFiles(path.join(__dirname, 'public', 'embed'))
+  });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  🎬 Aniko running at http://localhost:${PORT}\n`);
 });
