@@ -1276,10 +1276,6 @@
       try {
         let embedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
         
-        // When testing on localhost with static server, route to player (clean URL) with query params to avoid 301 redirects stripping them
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          embedPath = `/embed/player?anilistId=${anilistId}&epNum=${epNum}&audio=${selectedAudio}`;
-        }
         
         const baseUrl = window.location.origin;
         const fullUrl = baseUrl + embedPath;
