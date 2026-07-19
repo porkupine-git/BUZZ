@@ -10,6 +10,7 @@
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const API_BASE = isLocal ? (window.localStorage.getItem('HF_URL') || '') : '';
 
+
   // ─── Parse URL & Config ─────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
@@ -242,7 +243,7 @@
 
   function togglePlay() {
     if (video.paused) {
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     } else {
       video.pause();
     }
@@ -424,7 +425,7 @@
     if (document.fullscreenElement) {
       document.exitFullscreen();
     } else {
-      wrapper.requestFullscreen().catch(() => {});
+      wrapper.requestFullscreen().catch(() => { });
     }
   }
 
@@ -539,7 +540,7 @@
 
     const isAuto = hls ? hls.autoLevelEnabled : (currentQualityLevel === -1);
     let autoText = "Auto";
-    
+
     if (isAuto && hls && hls.currentLevel >= 0 && levels[hls.currentLevel]) {
       const lvl = levels[hls.currentLevel];
       const label = lvl.height >= 1080 ? "1080p" : lvl.height >= 720 ? "720p" : lvl.height >= 480 ? "480p" : lvl.height >= 360 ? "360p" : `${lvl.height}p`;
@@ -587,7 +588,7 @@
       qualityBadge.textContent = maxHeight >= 1080 ? "FHD" : "HD";
       qualityBadge.classList.remove("hidden");
     }
-    
+
     // Update Settings Panel Value
     if (valQuality) {
       if (isAuto) valQuality.textContent = autoText;
@@ -663,7 +664,7 @@
     if (valAutoSkip) valAutoSkip.textContent = isAutoSkip ? "On" : "Off";
     btnAutoSkipOn.classList.toggle("active", isAutoSkip);
     btnAutoSkipOff.classList.toggle("active", !isAutoSkip);
-    
+
     btnAutoSkipOn.addEventListener("click", () => {
       isAutoSkip = true;
       localStorage.setItem("aniko_autoskip", "true");
@@ -687,7 +688,7 @@
     if (valAutoPlay) valAutoPlay.textContent = isAutoPlay ? "On" : "Off";
     btnAutoPlayOn.classList.toggle("active", isAutoPlay);
     btnAutoPlayOff.classList.toggle("active", !isAutoPlay);
-    
+
     btnAutoPlayOn.addEventListener("click", () => {
       isAutoPlay = true;
       localStorage.setItem("aniko_autoplay", "true");
@@ -821,7 +822,7 @@
         if (autoplay || isAutoPlay || !video.paused) {
           video.play().catch(() => {
             video.muted = true;
-            video.play().catch(() => {});
+            video.play().catch(() => { });
           });
         }
       });
@@ -861,7 +862,7 @@
           if (autoplay || isAutoPlay) {
             video.play().catch(() => {
               video.muted = true;
-              video.play().catch(() => {});
+              video.play().catch(() => { });
             });
           }
         },
@@ -915,7 +916,7 @@
       track.kind = "subtitles";
       track.label = sub.label || `Track ${i + 1}`;
       track.srclang = sub.language || "en";
-      
+
       const isEng = track.label.toLowerCase().includes("english") || track.label.toLowerCase().includes("eng") || track.srclang.toLowerCase() === "en";
       if (isEng && englishIndex === -1) englishIndex = i;
       if (sub.default) defaultIndex = i;
@@ -1096,7 +1097,7 @@
           const errRes = await res.json().catch(() => ({}));
           throw new Error(errRes.error || `API error: ${res.status}`);
         }
-        
+
         const json = await res.json();
         if (json.error) throw new Error(json.error);
 
