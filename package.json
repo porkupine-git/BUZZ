@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node scraper.js"
+    "test": "node scraper.js",
+    "dev": "http-server public -p 3000 -c-1"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +20,8 @@
     "jsonwebtoken": "^9.0.3",
     "node-cache": "^5.1.2",
     "puppeteer": "^25.3.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
   }
 }
