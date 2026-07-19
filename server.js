@@ -129,7 +129,8 @@ app.use((req, res, next) => {
   if (origin) {
     try {
       const hostname = new URL(origin).hostname;
-      if (ALLOWED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d))) {
+      const serverHost = req.hostname || (req.headers.host ? req.headers.host.split(':')[0] : '');
+      if (hostname === serverHost || ALLOWED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d))) {
         isAllowed = true;
       }
     } catch (e) { }
