@@ -200,9 +200,7 @@
     wrapper.classList.add("controls-visible");
     wrapper.classList.remove("controls-hidden");
     clearTimeout(controlsTimer);
-    if (!video.paused) {
-      controlsTimer = setTimeout(hideControls, 3000);
-    }
+    controlsTimer = setTimeout(hideControls, 3000);
   }
 
   function hideControls() {
@@ -213,9 +211,8 @@
 
   wrapper.addEventListener("mousemove", showControls);
   wrapper.addEventListener("mouseleave", () => {
-    if (!video.paused) {
-      controlsTimer = setTimeout(hideControls, 1000);
-    }
+    clearTimeout(controlsTimer);
+    controlsTimer = setTimeout(hideControls, 1000);
   });
 
   // Touch support
