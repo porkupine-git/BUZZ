@@ -651,6 +651,10 @@ video::cue {
     font-size: 12px;
   }
 
+  video::-webkit-media-text-track-display {
+    transform: translateY(-16px) !important;
+  }
+
 }
 @media (max-width: 360px) {
   .time-display { display: none; }
