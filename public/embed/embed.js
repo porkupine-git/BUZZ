@@ -10,6 +10,18 @@
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const API_BASE = isLocal ? (window.localStorage.getItem('HF_URL') || '') : '';
 
+  // ─── Anti-Direct-Access ─────────────────────────────────────
+  // Prevent users from opening the embed link directly in a browser tab.
+  if (window.self === window.top && !isLocal) {
+    document.body.innerHTML = `
+      <div style="background:#0f0f14;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;padding:20px;">
+        <h2 style="margin-bottom:10px;">🚫 Direct Access Not Allowed</h2>
+        <p style="color:#a0a0b0;margin-bottom:20px;">This video player can only be embedded on other websites.</p>
+        <a href="/" style="background:#5a5eb9;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;font-weight:600;">Go to Aniko Embed Docs</a>
+      </div>
+    `;
+    return;
+  }
 
   // ─── Parse URL & Config ─────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
