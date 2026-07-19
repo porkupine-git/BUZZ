@@ -88,8 +88,15 @@ setInterval(() => {
 }, 300000);
 
 // ─── Security & Anti-Scraping ───────────────────────────────────────────────
-// Yahan apna website domain daalo (e.g., 'anixo.buzz')
-const ALLOWED_DOMAINS = ['localhost', '127.0.0.1', 'anixo.buzz', 'anixo.online'];
+// Get the domain from the environment variable to restrict the API to this environment
+let envDomain = null;
+if (process.env.EMBED_URL) {
+  try {
+    envDomain = new URL(process.env.EMBED_URL).hostname;
+  } catch(e) {}
+}
+
+const ALLOWED_DOMAINS = envDomain ? [envDomain, 'localhost', '127.0.0.1'] : ['localhost', '127.0.0.1'];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin || req.headers.referer;
@@ -293,17 +300,18 @@ app.use('/api/proxy', async (req, res) => {
 
     if (isM3u8) {
       const targetBase = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-      
+      const proxyBase = `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
+
       const rewritten = response.data.split('\n').map(line => {
         const trimmed = line.trim();
         if (trimmed && !trimmed.startsWith('#')) {
           const absoluteUrl = trimmed.startsWith('http') ? trimmed : targetBase + trimmed;
-          return `/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}`;
+          return `${proxyBase}/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}`;
         }
         if (trimmed.includes('URI="')) {
           return trimmed.replace(/URI="([^"]+)"/g, (match, uri) => {
             const absoluteUrl = uri.startsWith('http') ? uri : targetBase + uri;
-            return `URI="/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}"`;
+            return `URI="${proxyBase}/api/proxy?url=${encodeURIComponent(absoluteUrl)}&referer=${encodeURIComponent(referer)}"`;
           });
         }
         return trimmed;
