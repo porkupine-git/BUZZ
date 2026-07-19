@@ -220,7 +220,10 @@
 
   // Touch support
   let lastTap = 0;
+  let isTouchDevice = false;
+
   clickArea.addEventListener("touchstart", (e) => {
+    isTouchDevice = true; // Mark as touch device to prevent click interference
     const now = Date.now();
     if (now - lastTap < 300) {
       // double tap → seek
@@ -250,8 +253,10 @@
 
   // ─── Click Area → Play/Pause ────────────────────────────────
   clickArea.addEventListener("click", (e) => {
-    // Ignore on touch devices (handled by touchstart)
-    if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
+    // Ignore if touch (handled by touchstart)
+    if (isTouchDevice) return;
+    
+    // Toggle play/pause for desktop users
     togglePlay();
   });
 
