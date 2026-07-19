@@ -252,6 +252,12 @@ app.get('/api/watch/:anilistId/:audio/:epNum', cacheMiddleware(1800), async (req
 
 // HLS Proxy to bypass CORS/Referer restrictions on CDNs
 const axios = require('axios');
+const http = require('http');
+const https = require('https');
+
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 50 });
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 50 });
+
 app.use('/api/proxy', async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.set('Access-Control-Allow-Origin', '*');
@@ -279,7 +285,10 @@ app.use('/api/proxy', async (req, res) => {
       url: targetUrl,
       headers: headers,
       responseType: (isM3u8 || isSubtitle) ? 'text' : 'stream',
-      validateStatus: () => true
+      validateStatus: () => true,
+      httpAgent,
+      httpsAgent,
+      timeout: 15000 // 15 seconds timeout
     });
 
     if (response.status >= 400) {
