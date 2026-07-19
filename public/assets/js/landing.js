@@ -89,7 +89,8 @@
         let embedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
         
         
-        const baseUrl = window.location.origin;
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseUrl = isLocal ? 'https://ritesh0997-hamster09.hf.space' : window.location.origin;
         const fullUrl = baseUrl + embedPath;
 
         // Remove old iframe if any

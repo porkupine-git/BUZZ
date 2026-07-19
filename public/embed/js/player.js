@@ -8,7 +8,7 @@
   // For local testing, set HF_URL in your browser's localStorage to avoid leaking it in GitHub.
   // Production relies on Cloudflare _redirects proxying.
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const API_BASE = isLocal ? (window.localStorage.getItem('HF_URL') || '') : '';
+  const API_BASE = isLocal ? 'https://ritesh0997-hamster09.hf.space' : '';
 
   // ─── Anti-Direct-Access ─────────────────────────────────────
   // Prevent users from opening the embed link directly in a browser tab.
