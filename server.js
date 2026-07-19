@@ -12,7 +12,6 @@ const app = express();
 const PORT = process.env.PORT || 7860;
 
 // Enable gzip compression for API responses (applied later)
-const compression = require('compression');
 const shouldCompress = (req, res) => {
   if (req.path.startsWith('/api/proxy')) return false;
   return compression.filter(req, res);
