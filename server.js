@@ -43,11 +43,15 @@ app.use('/embed/assets', express.static(path.join(__dirname, 'public', 'embed'))
 
 // ─── Rate Limiter (Anti-Scraping) ───────────────────────────────────────────
 const rateLimitMap = new Map();
-const RATE_LIMIT = 30;       // max requests
+const RATE_LIMIT = 60;       // max requests
 const RATE_WINDOW = 60000;   // per 1 minute
 
 function getClientIp(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || 'unknown';
+  return req.headers['cf-connecting-ip'] || 
+         req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+         req.ip || 
+         req.connection?.remoteAddress || 
+         'unknown';
 }
 
 app.use('/api', (req, res, next) => {
