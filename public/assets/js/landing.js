@@ -90,7 +90,7 @@
         
         
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const baseUrl = isLocal ? 'http://localhost:7860' : window.location.origin;
+        const baseUrl = isLocal ? 'http://127.0.0.1:7860' : window.location.origin;
         const fullUrl = baseUrl + embedPath;
 
         // Remove old iframe if any
