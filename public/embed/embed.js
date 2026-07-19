@@ -5,6 +5,11 @@
 (function () {
   "use strict";
 
+  // Define API_BASE for localhost testing without leaking it in production
+  const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'https://ritesh0997-hamster09.hf.space' 
+    : '';
+
   // ─── Parse URL & Config ─────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
@@ -24,6 +29,13 @@
     config = {
       url: params.get("url"),
       referer: params.get("referer") || "",
+    };
+  } else if (params.get("anilistId")) {
+    mode = "anime";
+    config = {
+      anilistId: params.get("anilistId"),
+      epNum: params.get("epNum") || "1",
+      audio: params.get("audio") || "sub"
     };
   } else {
     // Fallback or old token
@@ -757,7 +769,7 @@
 
     let url;
     if (stream.type === "hls") {
-      url = `/api/proxy?url=${encodeURIComponent(stream.url)}&referer=${encodeURIComponent(stream.referer || "")}`;
+      url = `${API_BASE}/api/proxy?url=${encodeURIComponent(stream.url)}&referer=${encodeURIComponent(stream.referer || "")}`;
     } else {
       url = stream.url;
     }
@@ -787,8 +799,15 @@
     if (Hls.isSupported()) {
       hls = new Hls({
         maxLoadingDelay: 4,
+        maxBufferLength: 60,
+        maxMaxBufferLength: 120,
         enableWorker: true,
         lowLatencyMode: false,
+        capLevelToPlayerSize: true,
+        fragLoadingTimeOut: 30000,
+        manifestLoadingTimeOut: 30000,
+        fragLoadingMaxRetry: 6,
+        manifestLoadingMaxRetry: 6,
         startLevel: -1,
       });
 
@@ -903,7 +922,7 @@
 
       // Proxy subtitle files to bypass CORS restrictions on external CDNs
       const referer = getSubReferer(sub);
-      track.src = `/api/proxy?url=${encodeURIComponent(sub.file)}&referer=${encodeURIComponent(referer)}`;
+      track.src = `${API_BASE}/api/proxy?url=${encodeURIComponent(sub.file)}&referer=${encodeURIComponent(referer)}`;
       video.appendChild(track);
     });
 
@@ -1071,7 +1090,7 @@
         }
 
         const res = await fetch(
-          `/api/watch/${config.anilistId}/${config.audio}/${config.epNum}`
+          `${API_BASE}/api/watch/${config.anilistId}/${config.audio}/${config.epNum}`
         );
         if (!res.ok) {
           const errRes = await res.json().catch(() => ({}));
