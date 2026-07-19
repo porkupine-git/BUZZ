@@ -90,7 +90,7 @@
         
         
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const baseUrl = isLocal ? 'https://ritesh0997-hamster09.hf.space' : window.location.origin;
+        const baseUrl = isLocal ? 'http://localhost:7860' : window.location.origin;
         const fullUrl = baseUrl + embedPath;
 
         // Remove old iframe if any
@@ -101,7 +101,7 @@
         if (placeholder) placeholder.style.display = 'none';
 
         const iframe = document.createElement('iframe');
-        iframe.src = embedPath;
+        iframe.src = fullUrl;
         iframe.setAttribute('allowfullscreen', '');
         iframe.setAttribute('allow', 'autoplay; picture-in-picture');
         preview.appendChild(iframe);
