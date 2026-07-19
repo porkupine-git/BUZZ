@@ -271,7 +271,8 @@ async function extractVidWish(realId, audio) {
     const fileId = m[1];
     const data = await getJSON(
       `${VIDWISH}/stream/getSources?id=${fileId}&id=${fileId}`,
-      { Referer: `${VIDWISH}/`, "X-Requested-With": "XMLHttpRequest" }
+      { Referer: `${VIDWISH}/`, "X-Requested-With": "XMLHttpRequest" },
+      1
     );
     return { fileId, data };
   } catch { return null; }
@@ -380,7 +381,7 @@ async function getWatch(anilistId, audio, epNum) {
   // Step 3: Fast providers (Megaplay, VidWish, VidTube)
   const realId = attr("realid");
   const [megaSources, vidwishResult] = await Promise.allSettled([
-    getJSON(`${MEGAPLAY}/stream/getSources?id=${fileId}&id=${fileId}`, { Referer: `${MEGAPLAY}/`, "X-Requested-With": "XMLHttpRequest" }),
+    getJSON(`${MEGAPLAY}/stream/getSources?id=${fileId}&id=${fileId}`, { Referer: `${MEGAPLAY}/`, "X-Requested-With": "XMLHttpRequest" }, 1),
     realId ? extractVidWish(realId, audio) : Promise.resolve(null)
   ]);
 

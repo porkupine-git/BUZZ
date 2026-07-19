@@ -3,12 +3,16 @@ const path = require('path');
 const scraper = require('./scraper');
 const NodeCache = require('node-cache');
 const jwt = require('jsonwebtoken');
+const compression = require('compression');
 
 // Secret for signing tokens - you should put this in .env
 const JWT_SECRET = process.env.JWT_SECRET || 'aniko-super-secret-key-123!';
 
 const app = express();
 const PORT = process.env.PORT || 7860;
+
+// Enable gzip compression for all responses
+app.use(compression());
 
 // Initialize Cache
 const apiCache = new NodeCache({ stdTTL: 3600 });
