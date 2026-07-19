@@ -564,87 +564,33 @@ async function getEpisodes(anilistId, ctx = {}) {
     return { meta: { malId: null }, episodes: { sub, dub } };
   }
 
-  // Has MAL ID → fetch Jikan episodes and Anikoto episodes concurrently
-  const [allEps, anikotoData] = await Promise.all([
-    (async () => {
-      if (ctx.jikanEps) return ctx.jikanEps;
-      const first = await getJSON(`${JIKAN}/anime/${malId}/episodes?page=1`).catch(() => ({ data: [], pagination: {} }));
-      const lastPage = first.pagination?.last_visible_page ?? 1;
-      let eps = [...(first.data ?? [])];
-      if (lastPage > 1) {
-        const rest = await Promise.all(
-          Array.from({ length: lastPage - 1 }, (_, i) => getJSON(`${JIKAN}/anime/${malId}/episodes?page=${i + 2}`))
-        );
-        for (const r of rest) eps = eps.concat(r.data ?? []);
-      }
-      return eps;
-    })(),
-    (async () => {
-      let list = [];
-      let map = new Map();
-      try {
-        const { showId } = await findAnikotoShow(enTitle, jikanShow);
-        const listData = await getJSON(`${ANIKOTO}/ajax/episode/list/${showId}`, { "X-Requested-With": "XMLHttpRequest", Referer: `${ANIKOTO}/` });
-        list = extractEpisodes(listData.result ?? "");
-        list.forEach((e) => map.set(e.num, { hasSub: e.hasSub, hasDub: e.hasDub }));
-      } catch {}
-      return { list, map };
-    })()
-  ]);
+  // Has MAL ID → fetch Anikoto episodes directly
+  let anikotoEpList = [];
+  try {
+    const { showId } = await findAnikotoShow(enTitle, jikanShow);
+    const listData = await getJSON(`${ANIKOTO}/ajax/episode/list/${showId}`, { "X-Requested-With": "XMLHttpRequest", Referer: `${ANIKOTO}/` });
+    anikotoEpList = extractEpisodes(listData.result ?? "");
+  } catch {}
 
-  let anikotoEpList = anikotoData.list;
-  let anikotoEpMap = anikotoData.map;
-
-  // Fallback: if Jikan has no episodes, build from Anikoto + AniZip
-  if (!allEps.length && anikotoEpList.length) {
-    const sub = [], dub = [];
-    for (const ep of anikotoEpList) {
-      const meta = anizip.episodes?.[String(ep.num)] ?? {};
-      const base = {
-        number: ep.num,
-        title: meta.title?.en ?? meta.title?.["x-jat"] ?? `Episode ${ep.num}`,
-        duration: meta.runtime ? meta.runtime * 60 : null,
-        filler: false, uncensored: false,
-        description: meta.overview ?? null,
-        image: meta.image ?? null,
-        airDate: meta.airdate ?? null,
-        hasSub: ep.hasSub, hasDub: ep.hasDub,
-      };
-      if (ep.hasSub) sub.push({ id: `watch/anikoto/${anilistId}/sub/anikoto-${ep.num}`, ...base, audio: "sub" });
-      if (ep.hasDub) dub.push({ id: `watch/anikoto/${anilistId}/dub/anikoto-${ep.num}`, ...base, audio: "dub" });
-    }
-    sub.sort((a, b) => a.number - b.number);
-    dub.sort((a, b) => a.number - b.number);
-    return { meta: { malId }, episodes: { sub, dub } };
-  }
-
-  const hasSubFallback = anikotoEpMap.size === 0;
-  const hasDubFallback = anikotoEpMap.size === 0;
   const sub = [], dub = [];
-
-  for (const ep of allEps) {
-    const epNum = ep.mal_id;
-    const meta = anizip.episodes?.[String(epNum)] ?? {};
-    const avail = anikotoEpMap.get(epNum);
-    const epHasSub = hasSubFallback ? true : (avail?.hasSub ?? false);
-    const epHasDub = hasDubFallback ? true : (avail?.hasDub ?? false);
+  for (const ep of anikotoEpList) {
+    const meta = anizip.episodes?.[String(ep.num)] ?? {};
     const base = {
-      number: epNum,
-      title: ep.title ?? meta.title?.en ?? `Episode ${epNum}`,
-      titleJapanese: ep.title_japanese ?? null,
-      titleRomanji: ep.title_romanji ?? null,
-      image: meta.image ?? null,
-      airDate: ep.aired ?? meta.airDate ?? null,
+      number: ep.num,
+      title: meta.title?.en ?? meta.title?.["x-jat"] ?? `Episode ${ep.num}`,
       duration: meta.runtime ? meta.runtime * 60 : null,
-      score: ep.score ?? null,
-      filler: ep.filler, recap: ep.recap,
+      filler: meta.filler ?? false, uncensored: false,
       description: meta.overview ?? null,
-      hasSub: epHasSub, hasDub: epHasDub,
+      image: meta.image ?? null,
+      airDate: meta.airdate ?? null,
+      hasSub: ep.hasSub, hasDub: ep.hasDub,
     };
-    if (epHasSub) sub.push({ id: `watch/anikoto/${anilistId}/sub/anikoto-${epNum}`, ...base, audio: "sub" });
-    if (epHasDub) dub.push({ id: `watch/anikoto/${anilistId}/dub/anikoto-${epNum}`, ...base, audio: "dub" });
+    if (ep.hasSub) sub.push({ id: `watch/anikoto/${anilistId}/sub/anikoto-${ep.num}`, ...base, audio: "sub" });
+    if (ep.hasDub) dub.push({ id: `watch/anikoto/${anilistId}/dub/anikoto-${ep.num}`, ...base, audio: "dub" });
   }
-
+  sub.sort((a, b) => a.number - b.number);
+  dub.sort((a, b) => a.number - b.number);
+  
   return { meta: { malId }, episodes: { sub, dub } };
 }
 
