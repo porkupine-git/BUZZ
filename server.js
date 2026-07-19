@@ -21,11 +21,9 @@ const cacheMiddleware = (ttlSeconds) => {
     const key = req.originalUrl;
     const cachedResponse = apiCache.get(key);
 
-    // Tell Cloudflare and browsers to cache this response
-    res.set('Cache-Control', `public, max-age=${ttlSeconds}, s-maxage=${ttlSeconds}`);
-
     if (cachedResponse) {
       console.log(`[CACHE HIT] ${key}`);
+      res.set('Cache-Control', `public, max-age=${ttlSeconds}, s-maxage=${ttlSeconds}`);
       return res.json(cachedResponse);
     } else {
       console.log(`[CACHE MISS] ${key}`);
@@ -33,6 +31,10 @@ const cacheMiddleware = (ttlSeconds) => {
       res.json = (body) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           apiCache.set(key, body, ttlSeconds);
+          res.set('Cache-Control', `public, max-age=${ttlSeconds}, s-maxage=${ttlSeconds}`);
+        } else {
+          // Do not cache errors
+          res.set('Cache-Control', 'no-store, max-age=0');
         }
         res.originalJson(body);
       };
