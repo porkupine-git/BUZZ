@@ -439,7 +439,12 @@
     if (document.fullscreenElement) {
       document.exitFullscreen();
     } else {
-      wrapper.requestFullscreen().catch(() => { });
+      wrapper.requestFullscreen().then(() => {
+        // Attempt to lock screen orientation to landscape on mobile
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock("landscape").catch(() => {});
+        }
+      }).catch(() => { });
     }
   }
 
@@ -447,6 +452,11 @@
     const fs = !!document.fullscreenElement;
     iconExpand.classList.toggle("hidden", fs);
     iconCompress.classList.toggle("hidden", !fs);
+    
+    // Unlock orientation when exiting fullscreen
+    if (!fs && screen.orientation && screen.orientation.unlock) {
+      screen.orientation.unlock();
+    }
   });
 
   // ─── Dropdown Menus ─────────────────────────────────────────
