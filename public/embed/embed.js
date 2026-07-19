@@ -129,6 +129,7 @@
   const btnBackSubs = $("btn-back-subs");
   const valSubs = $("val-subs");
   const btnAutoSkipOn = $("btn-autoskip-on");
+  const btnAutoSkipOff = $("btn-autoskip-off");
   const btnSubs = $("btn-subs");
   const btnFullscreen = $("btn-fullscreen");
   const iconExpand = $("icon-expand");
