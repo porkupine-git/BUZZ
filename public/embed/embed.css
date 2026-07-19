@@ -315,12 +315,6 @@ video::cue {
   box-shadow: 0 0 20px var(--accent-glow);
 }
 
-.player-wrapper.controls-hidden .skip-btn.visible {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(120%);
-}
-
 .skip-btn--outro {
   bottom: 90px;
 }
