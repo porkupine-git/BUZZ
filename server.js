@@ -11,8 +11,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'aniko-super-secret-key-123!';
 const app = express();
 const PORT = process.env.PORT || 7860;
 
-// Enable gzip compression for all responses
-app.use(compression());
+// Enable gzip compression for API responses (applied later)
+const compression = require('compression');
+const shouldCompress = (req, res) => {
+  if (req.path.startsWith('/api/proxy')) return false;
+  return compression.filter(req, res);
+};
+app.use(compression({ filter: shouldCompress }));
 
 // Initialize Cache
 const apiCache = new NodeCache({ stdTTL: 3600 });
