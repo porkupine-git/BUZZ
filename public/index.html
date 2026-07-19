@@ -997,14 +997,14 @@
       <!-- With Options -->
       <div class="code-block">
         <div class="code-header">
-          <span><span class="code-dot code-dot--html"></span> With Autoplay & Custom Color</span>
+          <span><span class="code-dot code-dot--html"></span> With Custom Color</span>
           <button class="copy-btn" onclick="copyCode(this)">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy
           </button>
         </div>
         <pre><code><span class="syn-tag">&lt;iframe</span>
-  <span class="syn-attr">src</span>=<span class="syn-val">"https://anixo.buzz/embed/ani/{anilist-id}/{ep-num}/{language}?<span class="syn-type">autoplay=1&amp;color=%236366f1</span>"</span>
+  <span class="syn-attr">src</span>=<span class="syn-val">"https://anixo.buzz/embed/ani/{anilist-id}/{ep-num}/{language}?<span class="syn-type">color=%236366f1</span>"</span>
   <span class="syn-attr">width</span>=<span class="syn-val">"100%"</span>
   <span class="syn-attr">height</span>=<span class="syn-val">"100%"</span>
   <span class="syn-attr">style</span>=<span class="syn-val">"aspect-ratio: 16/9;"</span>
@@ -1068,10 +1068,7 @@
       <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Query Parameters (Optional)</h3>
 
       <div class="param-grid">
-        <div class="param-card">
-          <span class="param-name">?autoplay <span class="param-tag param-tag--optional">Optional</span></span>
-          <span class="param-desc">Set to <code>1</code> to auto-play the video when it loads. Default: <code>0</code>.</span>
-        </div>
+
         <div class="param-card">
           <span class="param-name">?color <span class="param-tag param-tag--optional">Optional</span></span>
           <span class="param-desc">Custom accent color for the player UI. Use URL-encoded hex, e.g. <code>%236366f1</code> for <code>#6366f1</code>.</span>
@@ -1104,7 +1101,7 @@
   }
 
   <span class="syn-kw">if</span> (<span class="syn-prop">type</span> === <span class="syn-str">'aniko:ended'</span>) {
-    <span class="syn-fn">console</span>.<span class="syn-method">log</span>(<span class="syn-str">'Episode finished — load next! AutoPlay:'</span>, <span class="syn-prop">data</span>.<span class="syn-prop">autoPlay</span>);
+    <span class="syn-fn">console</span>.<span class="syn-method">log</span>(<span class="syn-str">'Episode finished — load next!'</span>);
   }
 });</code></pre>
       </div>
@@ -1170,7 +1167,7 @@
             <tr>
               <td><span class="api-route">aniko:ended</span></td>
               <td><code>autoPlay</code></td>
-              <td>Video reached the end. <code>autoPlay</code> (boolean) indicates if user has Auto Play enabled.</td>
+              <td>Video reached the end.</td>
             </tr>
           </tbody>
         </table>

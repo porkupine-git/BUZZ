@@ -65,7 +65,6 @@
       accent + "66"
     );
   }
-  const autoplay = params.get("autoplay") === "1";
 
   // ─── DOM References ─────────────────────────────────────────
   const $ = (id) => document.getElementById(id);
@@ -130,13 +129,7 @@
   const btnBackSubs = $("btn-back-subs");
   const valSubs = $("val-subs");
   const btnAutoSkipOn = $("btn-autoskip-on");
-  const btnAutoSkipOff = $("btn-autoskip-off");
-  const panelAutoPlay = $("panel-autoplay");
-  const btnOpenAutoPlay = $("btn-open-autoplay");
-  const btnBackAutoPlay = $("btn-back-autoplay");
-  const valAutoPlay = $("val-autoplay");
-  const btnAutoPlayOn = $("btn-autoplay-on");
-  const btnAutoPlayOff = $("btn-autoplay-off");
+  const btnSubs = $("btn-subs");
   const btnFullscreen = $("btn-fullscreen");
   const iconExpand = $("icon-expand");
   const iconCompress = $("icon-compress");
@@ -157,7 +150,6 @@
   let currentQualityLevel = -1; // auto
   let activeSubTrack = -1;
   let isAutoSkip = localStorage.getItem("aniko_autoskip") === "true"; // Default false
-  let isAutoPlay = localStorage.getItem("aniko_autoplay") === "true"; // Default false
 
   // ─── Utilities ──────────────────────────────────────────────
   function formatTime(s) {
@@ -314,7 +306,7 @@
   });
 
   video.addEventListener("ended", () => {
-    postMsg("ended", { autoPlay: isAutoPlay });
+    postMsg("ended");
   });
 
   // ─── Seek Bar ───────────────────────────────────────────────
@@ -479,7 +471,6 @@
       panelMain.classList.remove("hidden");
       panelQuality.classList.add("hidden");
       panelAutoSkip.classList.add("hidden");
-      if (panelAutoPlay) panelAutoPlay.classList.add("hidden");
       if (panelSubs) panelSubs.classList.add("hidden");
     }
     activeMenu = null;
@@ -496,13 +487,6 @@
       panelMain.classList.add("hidden");
       panelAutoSkip.classList.remove("hidden");
     });
-    if (btnOpenAutoPlay) {
-      btnOpenAutoPlay.addEventListener("click", (e) => {
-        e.stopPropagation();
-        panelMain.classList.add("hidden");
-        panelAutoPlay.classList.remove("hidden");
-      });
-    }
     btnBackQuality.addEventListener("click", (e) => {
       e.stopPropagation();
       panelQuality.classList.add("hidden");
@@ -513,13 +497,6 @@
       panelAutoSkip.classList.add("hidden");
       panelMain.classList.remove("hidden");
     });
-    if (btnBackAutoPlay) {
-      btnBackAutoPlay.addEventListener("click", (e) => {
-        e.stopPropagation();
-        panelAutoPlay.classList.add("hidden");
-        panelMain.classList.remove("hidden");
-      });
-    }
     if (btnOpenSubs) {
       btnOpenSubs.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -732,30 +709,6 @@
     });
   }
 
-  // ─── Auto Play ─────────────────────────────────────────────
-  if (btnAutoPlayOn && btnAutoPlayOff) {
-    if (valAutoPlay) valAutoPlay.textContent = isAutoPlay ? "On" : "Off";
-    btnAutoPlayOn.classList.toggle("active", isAutoPlay);
-    btnAutoPlayOff.classList.toggle("active", !isAutoPlay);
-
-    btnAutoPlayOn.addEventListener("click", () => {
-      isAutoPlay = true;
-      localStorage.setItem("aniko_autoplay", "true");
-      btnAutoPlayOn.classList.add("active");
-      btnAutoPlayOff.classList.remove("active");
-      if (valAutoPlay) valAutoPlay.textContent = "On";
-      closeAllMenus();
-    });
-    btnAutoPlayOff.addEventListener("click", () => {
-      isAutoPlay = false;
-      localStorage.setItem("aniko_autoplay", "false");
-      btnAutoPlayOff.classList.add("active");
-      btnAutoPlayOn.classList.remove("active");
-      if (valAutoPlay) valAutoPlay.textContent = "Off";
-      closeAllMenus();
-    });
-  }
-
   function checkSkipButtons() {
     const t = video.currentTime;
 
@@ -874,7 +827,7 @@
         hideLoading();
         buildQualityMenu(data.levels);
         addSubtitleTracks();
-        if (autoplay || isAutoPlay || !video.paused) {
+        if (!video.paused) {
           video.play().catch(() => {
             // Autoplay blocked by browser. Leave it paused with sound on.
             console.log("Autoplay with sound was blocked by the browser. Waiting for user interaction.");
@@ -914,7 +867,7 @@
         () => {
           hideLoading();
           addSubtitleTracks();
-          if (autoplay || isAutoPlay) {
+          if (!video.paused) {
             video.play().catch(() => {
               console.log("Autoplay with sound was blocked by the browser. Waiting for user interaction.");
             });
