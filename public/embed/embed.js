@@ -199,7 +199,6 @@
   function showControls() {
     wrapper.classList.add("controls-visible");
     wrapper.classList.remove("controls-hidden");
-    if (typeof checkSkipButtons === "function") checkSkipButtons();
     clearTimeout(controlsTimer);
     if (!video.paused) {
       controlsTimer = setTimeout(hideControls, 3000);
@@ -210,7 +209,6 @@
     if (activeMenu) return; // don't hide if menu open
     wrapper.classList.remove("controls-visible");
     wrapper.classList.add("controls-hidden");
-    if (typeof checkSkipButtons === "function") checkSkipButtons();
   }
 
   wrapper.addEventListener("mousemove", showControls);
@@ -763,7 +761,6 @@
 
   function checkSkipButtons() {
     const t = video.currentTime;
-    const controlsVisible = wrapper.classList.contains("controls-visible");
 
     if (introTime && introTime.end > 0) {
       const inIntro = t >= introTime.start && t < introTime.end;
@@ -772,7 +769,7 @@
         return;
       }
       if (!inIntro) skipIntroBtn.dataset.used = "false";
-      const shouldShow = inIntro && controlsVisible && skipIntroBtn.dataset.used !== "true";
+      const shouldShow = inIntro && skipIntroBtn.dataset.used !== "true";
       skipIntroBtn.classList.toggle("hidden", !shouldShow);
       skipIntroBtn.classList.toggle("visible", shouldShow);
     }
@@ -784,7 +781,7 @@
         return;
       }
       if (!inOutro) skipOutroBtn.dataset.used = "false";
-      const shouldShow = inOutro && controlsVisible && skipOutroBtn.dataset.used !== "true";
+      const shouldShow = inOutro && skipOutroBtn.dataset.used !== "true";
       skipOutroBtn.classList.toggle("hidden", !shouldShow);
       skipOutroBtn.classList.toggle("visible", shouldShow);
     }
