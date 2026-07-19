@@ -10,6 +10,7 @@
   const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const API_BASE = isLocal ? 'https://ritesh0997-hamster09.hf.space' : '';
 
+
   // ─── Anti-Direct-Access ─────────────────────────────────────
   // Prevent users from opening the embed link directly in a browser tab.
   if (window.self === window.top && !isLocal) {
@@ -245,7 +246,7 @@
   clickArea.addEventListener("click", (e) => {
     // Ignore if touch (handled by touchstart)
     if (isTouchDevice) return;
-    
+
     // Toggle play/pause for desktop users
     togglePlay();
   });
@@ -437,7 +438,7 @@
       wrapper.requestFullscreen().then(() => {
         // Attempt to lock screen orientation to landscape on mobile
         if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock("landscape").catch(() => {});
+          screen.orientation.lock("landscape").catch(() => { });
         }
       }).catch(() => { });
     }
@@ -447,7 +448,7 @@
     const fs = !!document.fullscreenElement;
     iconExpand.classList.toggle("hidden", fs);
     iconCompress.classList.toggle("hidden", !fs);
-    
+
     // Unlock orientation when exiting fullscreen
     if (!fs && screen.orientation && screen.orientation.unlock) {
       screen.orientation.unlock();
