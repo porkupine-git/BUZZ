@@ -379,15 +379,13 @@ async function getWatch(anilistId, audio, epNum) {
 
   // Step 3: Fast providers (Megaplay, VidWish, VidTube)
   const realId = attr("realid");
-  const [megaSources, vidwishResult, vidtubeResult] = await Promise.allSettled([
+  const [megaSources, vidwishResult] = await Promise.allSettled([
     getJSON(`${MEGAPLAY}/stream/getSources?id=${fileId}&id=${fileId}`, { Referer: `${MEGAPLAY}/`, "X-Requested-With": "XMLHttpRequest" }),
-    realId ? extractVidWish(realId, audio) : Promise.resolve(null),
-    getJSON(`${VIDTUBE}/stream/getSources?id=${fileId}&id=${fileId}`, { Referer: `${VIDTUBE}/`, "X-Requested-With": "XMLHttpRequest" }).catch(() => null),
+    realId ? extractVidWish(realId, audio) : Promise.resolve(null)
   ]);
 
   const mega    = megaSources.status  === "fulfilled" ? megaSources.value  : null;
   const vidwish = vidwishResult.status === "fulfilled" ? vidwishResult.value : null;
-  const vidtube = vidtubeResult.status === "fulfilled" ? vidtubeResult.value : null;
 
   // Build streams list (priority ordered)
   const streams = [];
@@ -395,12 +393,7 @@ async function getWatch(anilistId, audio, epNum) {
     streams.push({ url: mega.sources.file, type: "hls", referer: `${MEGAPLAY}/`, server: "Megaplay", priority: 5, default: true });
   }
   streams.push({ url: embedUrl, type: "embed", referer: `${MEGAPLAY}/`, server: "Megaplay-embed", priority: 4 });
-  
-  if (vidtube?.sources?.file) {
-    streams.push({ url: vidtube.sources.file, type: "hls", referer: `${VIDTUBE}/`, server: "Vidtube", priority: 5 });
-    streams.push({ url: `${VIDTUBE}/stream/ani/${anilistId}/${epNum}/${audio}`, type: "embed", referer: `${VIDTUBE}/`, server: "Vidtube-embed", priority: 4 });
-  }
-
+  // Vidtube removed because it was returning incorrect anime streams
   if (vidwish?.data?.sources?.file) {
     streams.push({ url: vidwish.data.sources.file, type: "hls", referer: `${VIDWISH}/`, server: "VidWish", priority: 4 });
   }

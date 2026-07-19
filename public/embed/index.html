@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aniko Embed — Developer Docs</title>
+  <meta name="description" content="Aniko Embed Provider — Embed anime and video streams anywhere with a single iframe. Full documentation and API reference.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --accent-dim: rgba(99, 102, 241, 0.08);
+      --bg: #09090b;
+      --bg-card: #111113;
+      --bg-code: #0c0c0e;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-accent: rgba(99, 102, 241, 0.2);
+      --text: #fafafa;
+      --text-soft: rgba(255, 255, 255, 0.7);
+      --text-dim: rgba(255, 255, 255, 0.4);
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --cyan: #06b6d4;
+      --pink: #ec4899;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ─── Background Grid ─────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Glow Orbs ───────────────────────── */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-orb--1 {
+      width: 500px; height: 500px;
+      background: rgba(99, 102, 241, 0.12);
+      top: -100px; left: -100px;
+    }
+
+    .glow-orb--2 {
+      width: 400px; height: 400px;
+      background: rgba(236, 72, 153, 0.08);
+      bottom: -50px; right: -50px;
+    }
+
+    .glow-orb--3 {
+      width: 350px; height: 350px;
+      background: rgba(6, 182, 212, 0.06);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ─── Layout ──────────────────────────── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── Nav ─────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .nav-brand svg {
+      color: var(--accent);
+    }
+
+    .nav-brand span {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand small {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-light);
+      background: var(--accent-dim);
+      padding: 2px 8px;
+      border-radius: 20px;
+      border: 1px solid var(--border-accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-links a {
+      color: var(--text-soft);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* ─── Hero ────────────────────────────── */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--accent-dim);
+      border: 1px solid var(--border-accent);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-light);
+      margin-bottom: 24px;
+    }
+
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--accent-light) 50%, var(--pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-soft);
+      max-width: 520px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-soft);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ─── Sections ────────────────────────── */
+    section {
+      padding: 60px 0;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent-light);
+      margin-bottom: 12px;
+    }
+
+    section h2 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    section > .container > p {
+      color: var(--text-soft);
+      font-size: 15px;
+      margin-bottom: 32px;
+      max-width: 600px;
+    }
+
+    /* ─── Live Demo ───────────────────────── */
+    .demo-frame-wrap {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      margin-bottom: 16px;
+    }
+
+    .demo-frame-wrap iframe {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+    }
+
+    .demo-url-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-dim);
+      overflow: hidden;
+    }
+
+    .demo-url-bar .protocol { color: var(--green); }
+    .demo-url-bar .path { color: var(--accent-light); }
+    .demo-url-bar .param { color: var(--yellow); }
+
+    /* ─── Feature Grid ────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08);
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      font-size: 20px;
+    }
+
+    .feature-icon--purple { background: rgba(99, 102, 241, 0.12); }
+    .feature-icon--green  { background: rgba(34, 197, 94, 0.12); }
+    .feature-icon--cyan   { background: rgba(6, 182, 212, 0.12); }
+    .feature-icon--pink   { background: rgba(236, 72, 153, 0.12); }
+    .feature-icon--yellow { background: rgba(234, 179, 8, 0.12); }
+    .feature-icon--red    { background: rgba(239, 68, 68, 0.12); }
+
+    .feature-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ─── Code Blocks ─────────────────────── */
+    .code-block {
+      position: relative;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-header span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .code-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .code-dot--html { background: #e34c26; }
+    .code-dot--js   { background: #f7df1e; }
+    .code-dot--json { background: #06b6d4; }
+    .code-dot--url  { background: var(--green); }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    pre {
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-soft);
+    }
+
+    pre::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    /* Syntax colors */
+    .syn-tag    { color: #ef4444; }
+    .syn-attr   { color: #eab308; }
+    .syn-val    { color: #22c55e; }
+    .syn-str    { color: #22c55e; }
+    .syn-kw     { color: #c084fc; }
+    .syn-fn     { color: #60a5fa; }
+    .syn-cm     { color: rgba(255,255,255,0.25); }
+    .syn-num    { color: #f97316; }
+    .syn-prop   { color: #67e8f9; }
+    .syn-method { color: #fbbf24; }
+    .syn-type   { color: var(--accent-light); }
+
+    /* ─── API Table ───────────────────────── */
+    .api-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .api-table thead {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .api-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .api-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-soft);
+    }
+
+    .api-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .api-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .api-method {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .api-method--get {
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--green);
+    }
+
+    .api-route {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-light);
+    }
+
+    /* ─── Param Cards ─────────────────────── */
+    .param-grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .param-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .param-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-light);
+      white-space: nowrap;
+      min-width: 100px;
+    }
+
+    .param-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .param-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .param-tag--required {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--red);
+    }
+
+    .param-tag--optional {
+      background: rgba(234, 179, 8, 0.12);
+      color: var(--yellow);
+    }
+
+    /* ─── Keyboard Shortcuts ──────────────── */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .shortcut-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .shortcut-item span {
+      font-size: 13px;
+      color: var(--text-soft);
+    }
+
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 26px;
+      padding: 0 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-soft);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+    }
+
+    /* ─── Divider ─────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ─── Footer ──────────────────────────── */
+    footer {
+      padding: 40px 0;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    footer p {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    footer a {
+      color: var(--accent-light);
+      text-decoration: none;
+    }
+
+    /* ─── Try It Playground ────────────────── */
+    .playground-form {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+    }
+
+    .form-input {
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .audio-toggle {
+      display: flex;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .audio-toggle-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .audio-toggle-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .audio-toggle-btn:not(.active):hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .btn-load {
+      padding: 10px 28px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.25s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-load:hover {
+      background: var(--accent-light);
+      box-shadow: 0 0 32px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-load:active {
+      transform: scale(0.97);
+    }
+
+    .playground-preview {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #000;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .playground-preview iframe {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+    }
+
+    .playground-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 16/9;
+      color: var(--text-dim);
+      gap: 12px;
+    }
+
+    .playground-placeholder svg {
+      opacity: 0.3;
+    }
+
+    .playground-placeholder span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .generated-code-wrap {
+      margin-top: 16px;
+    }
+
+    .generated-code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .generated-code-header span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .generated-code {
+      position: relative;
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-light);
+      line-height: 1.7;
+      overflow-x: auto;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .playground-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .playground-status--info {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: var(--accent-light);
+    }
+
+    .playground-status--success {
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: var(--green);
+    }
+
+    .playground-status--error {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--red);
+    }
+
+    /* ─── Responsive ──────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 50px 0 40px; }
+      .hero h1 { font-size: 32px; }
+      .nav-links { display: none; }
+      section { padding: 40px 0; }
+      .feature-grid { grid-template-columns: 1fr; }
+      .shortcut-grid { grid-template-columns: 1fr; }
+      .playground-form { flex-direction: column; }
+      .form-group { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Glow Orbs -->
+  <div class="glow-orb glow-orb--1"></div>
+  <div class="glow-orb glow-orb--2"></div>
+  <div class="glow-orb glow-orb--3"></div>
+
+  <!-- ─── Nav ──────────────────────────────── -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Aniko Embed</span>
+        <small>v1.0</small>
+      </a>
+      <div class="nav-links">
+        <a href="#tryit">Live Demo</a>
+        <a href="#usage">Quick Start</a>
+        <a href="#api">API Reference</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ─── Hero ─────────────────────────────── -->
+  <div class="container">
+    <div class="hero">
+      <h1>Unleash Anime Streaming with One Line of Code</h1>
+      <p>Embed high-quality anime streams into your own website with a simple <code>&lt;iframe&gt;</code>. Complete with adaptive HLS, dual-audio (Sub/Dub), and OP/ED skipping.</p>
+      <div class="hero-actions">
+        <a href="#usage" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Get Started
+        </a>
+        <a href="#tryit" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Live Demo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ─── Live Demo ──────────────────────────── -->
+  <section id="tryit">
+    <div class="container">
+      <h2>Live Demo</h2>
+      <p><strong>Test the embed player right here.</strong></p>
+
+      <div class="playground-form">
+        <div class="form-group">
+          <label for="try-anilist">AniList ID</label>
+          <input type="text" id="try-anilist" class="form-input" placeholder="e.g. 21087" value="21087">
+        </div>
+        <div class="form-group">
+          <label for="try-episode">Episode</label>
+          <input type="number" id="try-episode" class="form-input" placeholder="1" value="1" min="1">
+        </div>
+        <div class="form-group">
+          <label>Audio</label>
+          <div class="audio-toggle">
+            <button class="audio-toggle-btn active" data-audio="sub" id="toggle-sub">SUB</button>
+            <button class="audio-toggle-btn" data-audio="dub" id="toggle-dub">DUB</button>
+          </div>
+        </div>
+        <button class="btn-load" id="btn-load-embed">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Load Player
+        </button>
+      </div>
+
+      <div id="playground-status" class="playground-status playground-status--info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Enter an AniList ID and click "Load Player" to test the embed
+      </div>
+
+      <div class="playground-preview" id="playground-preview">
+        <div class="playground-placeholder" id="playground-placeholder">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Your embed preview will appear here</span>
+        </div>
+      </div>
+
+      <div class="generated-code-wrap" id="generated-code-wrap" style="display: none;">
+        <div class="generated-code-header">
+          <span>📋 Generated Embed Code</span>
+          <button class="copy-btn" id="copy-generated" onclick="copyGenerated()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <div class="generated-code" id="generated-code"></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ─── Usage / Quick Start ──────────────── -->
+  <section id="usage">
+    <div class="container">
+      <span class="section-label">&lt;/&gt; Quick Start</span>
+      <h2>Start Embedding in 30 Seconds</h2>
+      <p>Just copy-paste one line of HTML. That's it. No SDK, no API key, no setup.</p>
+
+      <!-- Basic Embed -->
+      <div class="code-block">
+        <div class="code-header">
+          <span><span class="code-dot code-dot--html"></span> Basic Anime Embed</span>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <pre><code><span class="syn-tag">&lt;iframe</span>
+  <span class="syn-attr">src</span>=<span class="syn-val">"https://anixo.buzz/embed/ani/{anilist-id}/{ep-num}/{language}"</span>
+  <span class="syn-attr">width</span>=<span class="syn-val">"800"</span>
+  <span class="syn-attr">height</span>=<span class="syn-val">"450"</span>
+  <span class="syn-attr">frameborder</span>=<span class="syn-val">"0"</span>
+  <span class="syn-attr">allowfullscreen</span>
+  <span class="syn-attr">allow</span>=<span class="syn-val">"autoplay; picture-in-picture"</span>
+<span class="syn-tag">&gt;&lt;/iframe&gt;</span></code></pre>
+      </div>
+
+      <!-- With Options -->
+      <div class="code-block">
+        <div class="code-header">
+          <span><span class="code-dot code-dot--html"></span> With Autoplay & Custom Color</span>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <pre><code><span class="syn-tag">&lt;iframe</span>
+  <span class="syn-attr">src</span>=<span class="syn-val">"https://anixo.buzz/embed/ani/{anilist-id}/{ep-num}/{language}?<span class="syn-type">autoplay=1&amp;color=%236366f1</span>"</span>
+  <span class="syn-attr">width</span>=<span class="syn-val">"100%"</span>
+  <span class="syn-attr">height</span>=<span class="syn-val">"100%"</span>
+  <span class="syn-attr">style</span>=<span class="syn-val">"aspect-ratio: 16/9;"</span>
+  <span class="syn-attr">frameborder</span>=<span class="syn-val">"0"</span>
+  <span class="syn-attr">allowfullscreen</span>
+<span class="syn-tag">&gt;&lt;/iframe&gt;</span></code></pre>
+      </div>
+
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ─── API Reference ────────────────────── -->
+  <section id="api">
+    <div class="container">
+      <span class="section-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        API Reference
+      </span>
+      <h2>Embed Routes</h2>
+      <p>All available embed endpoints and their parameters.</p>
+
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Route</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="api-method api-method--get">GET</span></td>
+              <td><code>/embed/ani/:anilistId/:epNum/:audio</code></td>
+              <td><span class="badge badge--purple">Player</span> Simple Anime embed route. Example: <code>/embed/ani/21087/1/sub</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Anime Embed Parameters</h3>
+
+      <div class="param-grid">
+        <div class="param-card">
+          <span class="param-name">:anilistId <span class="param-tag param-tag--required">Required</span></span>
+          <span class="param-desc">The AniList ID of the anime. Example: <code>21087</code> for One Punch Man. Find it on <a href="https://anilist.co" target="_blank" style="color: var(--accent-light)">anilist.co</a>.</span>
+        </div>
+        <div class="param-card">
+          <span class="param-name">:epNum <span class="param-tag param-tag--required">Required</span></span>
+          <span class="param-desc">Episode number to play. Example: <code>1</code> for Episode 1.</span>
+        </div>
+        <div class="param-card">
+          <span class="param-name">:audio <span class="param-tag param-tag--required">Required</span></span>
+          <span class="param-desc">Audio track — either <code>sub</code> (Japanese + subtitles) or <code>dub</code> (English dubbed).</span>
+        </div>
+      </div>
+
+      <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Query Parameters (Optional)</h3>
+
+      <div class="param-grid">
+        <div class="param-card">
+          <span class="param-name">?autoplay <span class="param-tag param-tag--optional">Optional</span></span>
+          <span class="param-desc">Set to <code>1</code> to auto-play the video when it loads. Default: <code>0</code>.</span>
+        </div>
+        <div class="param-card">
+          <span class="param-name">?color <span class="param-tag param-tag--optional">Optional</span></span>
+          <span class="param-desc">Custom accent color for the player UI. Use URL-encoded hex, e.g. <code>%236366f1</code> for <code>#6366f1</code>.</span>
+        </div>
+      </div>
+
+      <!-- PostMessage API -->
+      <h3 style="font-size: 18px; font-weight: 700; margin: 32px 0 12px;">PostMessage API</h3>
+      <p style="color: var(--text-soft); font-size: 14px; margin-bottom: 20px;">Control the embedded player and receive events from the parent page using <code>window.postMessage()</code>.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span><span class="code-dot code-dot--js"></span> Listen for Player Events</span>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <pre><code><span class="syn-cm">// Listen for events from the embedded player</span>
+<span class="syn-kw">window</span>.<span class="syn-method">addEventListener</span>(<span class="syn-str">'message'</span>, (<span class="syn-prop">event</span>) => {
+  <span class="syn-kw">const</span> { <span class="syn-prop">type</span>, ...<span class="syn-prop">data</span> } = <span class="syn-prop">event</span>.<span class="syn-prop">data</span>;
+
+  <span class="syn-kw">if</span> (<span class="syn-prop">type</span> === <span class="syn-str">'aniko:ready'</span>) {
+    <span class="syn-fn">console</span>.<span class="syn-method">log</span>(<span class="syn-str">'Player loaded!'</span>, <span class="syn-prop">data</span>);
+    <span class="syn-cm">// { streams: 3, subtitles: 5, hasIntro: true, hasOutro: true }</span>
+  }
+
+  <span class="syn-kw">if</span> (<span class="syn-prop">type</span> === <span class="syn-str">'aniko:timeupdate'</span>) {
+    <span class="syn-fn">console</span>.<span class="syn-method">log</span>(<span class="syn-str">'Time:'</span>, <span class="syn-prop">data</span>.<span class="syn-prop">currentTime</span>, <span class="syn-str">'/'</span>, <span class="syn-prop">data</span>.<span class="syn-prop">duration</span>);
+  }
+
+  <span class="syn-kw">if</span> (<span class="syn-prop">type</span> === <span class="syn-str">'aniko:ended'</span>) {
+    <span class="syn-fn">console</span>.<span class="syn-method">log</span>(<span class="syn-str">'Episode finished — load next! AutoPlay:'</span>, <span class="syn-prop">data</span>.<span class="syn-prop">autoPlay</span>);
+  }
+});</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span><span class="code-dot code-dot--js"></span> Control the Player</span>
+          <button class="copy-btn" onclick="copyCode(this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+        <pre><code><span class="syn-kw">const</span> <span class="syn-prop">iframe</span> = <span class="syn-fn">document</span>.<span class="syn-method">querySelector</span>(<span class="syn-str">'iframe'</span>);
+
+<span class="syn-cm">// Play / Pause</span>
+<span class="syn-prop">iframe</span>.<span class="syn-prop">contentWindow</span>.<span class="syn-method">postMessage</span>({ <span class="syn-prop">type</span>: <span class="syn-str">'aniko:togglePlay'</span> }, <span class="syn-str">'*'</span>);
+
+<span class="syn-cm">// Seek to 2 minutes</span>
+<span class="syn-prop">iframe</span>.<span class="syn-prop">contentWindow</span>.<span class="syn-method">postMessage</span>({ <span class="syn-prop">type</span>: <span class="syn-str">'aniko:seek'</span>, <span class="syn-prop">time</span>: <span class="syn-num">120</span> }, <span class="syn-str">'*'</span>);
+
+<span class="syn-cm">// Set volume to 50%</span>
+<span class="syn-prop">iframe</span>.<span class="syn-prop">contentWindow</span>.<span class="syn-method">postMessage</span>({ <span class="syn-prop">type</span>: <span class="syn-str">'aniko:setVolume'</span>, <span class="syn-prop">volume</span>: <span class="syn-num">0.5</span> }, <span class="syn-str">'*'</span>);
+
+<span class="syn-cm">// Change speed to 1.5x</span>
+<span class="syn-prop">iframe</span>.<span class="syn-prop">contentWindow</span>.<span class="syn-method">postMessage</span>({ <span class="syn-prop">type</span>: <span class="syn-str">'aniko:setSpeed'</span>, <span class="syn-prop">speed</span>: <span class="syn-num">1.5</span> }, <span class="syn-str">'*'</span>);
+
+<span class="syn-cm">// Set quality (level index, -1 for auto)</span>
+<span class="syn-prop">iframe</span>.<span class="syn-prop">contentWindow</span>.<span class="syn-method">postMessage</span>({ <span class="syn-prop">type</span>: <span class="syn-str">'aniko:setQuality'</span>, <span class="syn-prop">level</span>: <span class="syn-num">-1</span> }, <span class="syn-str">'*'</span>);</code></pre>
+      </div>
+
+      <h3 style="font-size: 18px; font-weight: 700; margin: 32px 0 12px;">Events Reference</h3>
+
+      <div class="api-table-wrap">
+        <table class="api-table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Data</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="api-route">aniko:ready</span></td>
+              <td><code>streams, subtitles, hasIntro, hasOutro</code></td>
+              <td>Player loaded and ready to play</td>
+            </tr>
+            <tr>
+              <td><span class="api-route">aniko:play</span></td>
+              <td>—</td>
+              <td>Video started playing</td>
+            </tr>
+            <tr>
+              <td><span class="api-route">aniko:pause</span></td>
+              <td>—</td>
+              <td>Video paused</td>
+            </tr>
+            <tr>
+              <td><span class="api-route">aniko:timeupdate</span></td>
+              <td><code>currentTime, duration</code></td>
+              <td>Current playback position changed</td>
+            </tr>
+            <tr>
+              <td><span class="api-route">aniko:ended</span></td>
+              <td><code>autoPlay</code></td>
+              <td>Video reached the end. <code>autoPlay</code> (boolean) indicates if user has Auto Play enabled.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- ─── Footer ───────────────────────────── -->
+  <footer>
+    <div class="container">
+      <p>Built with ♥ — Aniko Embed Provider v1.0</p>
+    </div>
+  </footer>
+
+  <!-- ─── Copy Button Script ───────────────── -->
+  <script>
+    function copyCode(btn) {
+      const codeBlock = btn.closest('.code-block');
+      const code = codeBlock.querySelector('code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Copied!
+        `;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          `;
+        }, 2000);
+      });
+    }
+
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ─── Playground Logic ─────────────────────
+    const tryAnilist = document.getElementById('try-anilist');
+    const tryEpisode = document.getElementById('try-episode');
+    const toggleSub = document.getElementById('toggle-sub');
+    const toggleDub = document.getElementById('toggle-dub');
+    const btnLoad = document.getElementById('btn-load-embed');
+    const preview = document.getElementById('playground-preview');
+    const placeholder = document.getElementById('playground-placeholder');
+    const statusEl = document.getElementById('playground-status');
+    const codeWrap = document.getElementById('generated-code-wrap');
+    const codeEl = document.getElementById('generated-code');
+
+    let selectedAudio = 'sub';
+
+    // Audio toggle
+    toggleSub.addEventListener('click', () => {
+      selectedAudio = 'sub';
+      toggleSub.classList.add('active');
+      toggleDub.classList.remove('active');
+    });
+
+    toggleDub.addEventListener('click', () => {
+      selectedAudio = 'dub';
+      toggleDub.classList.add('active');
+      toggleSub.classList.remove('active');
+    });
+
+    function setStatus(type, message) {
+      statusEl.className = 'playground-status playground-status--' + type;
+      const icons = {
+        info: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+        success: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+        error: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+      };
+      statusEl.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${icons[type]}</svg>
+        ${message}
+      `;
+    }
+
+    // Load embed
+    btnLoad.addEventListener('click', async () => {
+      const anilistId = tryAnilist.value.trim();
+      const epNum = tryEpisode.value.trim();
+
+      if (!anilistId) {
+        setStatus('error', 'Please enter an AniList ID');
+        tryAnilist.focus();
+        return;
+      }
+
+      if (!epNum || parseInt(epNum) < 1) {
+        setStatus('error', 'Please enter a valid episode number');
+        tryEpisode.focus();
+        return;
+      }
+
+      setStatus('info', 'Loading player...');
+      
+      try {
+        const embedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
+        const baseUrl = window.location.origin;
+        const fullUrl = baseUrl + embedPath;
+
+        // Remove old iframe if any
+        const oldIframe = preview.querySelector('iframe');
+        if (oldIframe) oldIframe.remove();
+
+        // Show placeholder briefly then replace with iframe
+        if (placeholder) placeholder.style.display = 'none';
+
+        const iframe = document.createElement('iframe');
+        iframe.src = embedPath;
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('allow', 'autoplay; picture-in-picture');
+        preview.appendChild(iframe);
+
+      // Listen for player ready via postMessage
+      const readyHandler = (e) => {
+        if (e.data && e.data.type === 'aniko:ready') {
+          setStatus('success', 'Player loaded successfully');
+          window.removeEventListener('message', readyHandler);
+        }
+      };
+      window.addEventListener('message', readyHandler);
+
+      // Timeout fallback
+      setTimeout(() => {
+        window.removeEventListener('message', readyHandler);
+        if (statusEl.classList.contains('playground-status--info')) {
+          setStatus('success', 'Player loaded');
+        }
+      }, 15000);
+
+      // Show generated code
+      const embedCode = `<iframe\n  src="${baseUrl}${embedPath}"\n  width="800"\n  height="450"\n  frameborder="0"\n  allowfullscreen\n  allow="autoplay; picture-in-picture"\n></iframe>`;
+
+      codeEl.textContent = embedCode;
+      codeWrap.style.display = 'block';
+      } catch (err) {
+        setStatus('error', err.message);
+      }
+    });
+
+    // Enter key support in inputs
+    tryAnilist.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnLoad.click();
+    });
+    tryEpisode.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnLoad.click();
+    });
+
+    // Copy generated code
+    function copyGenerated() {
+      const code = codeEl.textContent;
+      const btn = document.getElementById('copy-generated');
+      navigator.clipboard.writeText(code).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Copied!
+        `;
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          `;
+        }, 2000);
+      });
+    }
+
+  </script>
+
+</body>
+</html>

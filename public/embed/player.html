@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aniko Player</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/embed/assets/embed.css">
+</head>
+<body>
+  <div id="player-wrapper" class="player-wrapper">
+    <!-- Video Element -->
+    <video id="video" crossorigin="anonymous" playsinline></video>
+
+    <!-- Click area for play/pause toggle -->
+    <div id="click-area" class="click-area"></div>
+
+    <!-- Gradient overlays for controls visibility -->
+    <div id="gradient-top" class="gradient gradient-top"></div>
+    <div id="gradient-bottom" class="gradient gradient-bottom"></div>
+
+    <!-- Loading Overlay -->
+    <div id="overlay-loading" class="overlay">
+      <div class="loader-ring">
+        <div></div><div></div><div></div><div></div>
+      </div>
+    </div>
+
+    <!-- Error Overlay -->
+    <div id="overlay-error" class="overlay hidden">
+      <div class="error-content">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p id="error-message">Stream unavailable</p>
+        <button id="retry-btn" class="retry-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Retry
+        </button>
+      </div>
+    </div>
+
+    <!-- Double Tap Ripple Indicators -->
+    <div id="dt-left" class="dt-indicator dt-left">
+      <div class="dt-ripple"></div>
+      <div class="dt-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+        <span>10s</span>
+      </div>
+    </div>
+    <div id="dt-right" class="dt-indicator dt-right">
+      <div class="dt-ripple"></div>
+      <div class="dt-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+        <span>10s</span>
+      </div>
+    </div>
+
+    <!-- Center play/pause flash indicator -->
+    <div id="center-indicator" class="center-indicator">
+      <svg id="ci-play" width="48" height="48" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <svg id="ci-pause" class="hidden" width="48" height="48" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+    </div>
+
+    <!-- Top bar with title & server selector -->
+    <div id="top-bar" class="top-bar">
+      <span id="video-title" class="video-title"></span>
+    </div>
+
+    <!-- Watermark / Credit -->
+    <a href="https://anixo.online" target="_blank" class="watermark">AniXo</a>
+
+    <!-- Skip Intro Button -->
+    <button id="skip-intro-btn" class="skip-btn hidden">
+      Skip Intro
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+    </button>
+
+    <!-- Skip Outro Button -->
+    <button id="skip-outro-btn" class="skip-btn skip-btn--outro hidden">
+      Skip Outro
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+    </button>
+
+    <!-- Bottom Controls -->
+    <div id="controls" class="controls">
+      <!-- Progress / Seek Bar -->
+      <div class="seek-container" id="seek-container">
+        <div class="seek-track">
+          <div id="seek-buffered" class="seek-fill seek-buffered"></div>
+          <div id="seek-hl-intro" class="seek-fill seek-hl hidden"></div>
+          <div id="seek-hl-outro" class="seek-fill seek-hl hidden"></div>
+          <div id="seek-played" class="seek-fill seek-played"></div>
+          <div id="seek-thumb" class="seek-thumb"></div>
+        </div>
+        <div id="seek-tooltip" class="seek-tooltip">0:00</div>
+      </div>
+
+      <!-- Control buttons row -->
+      <div class="controls-row">
+        <div class="controls-left">
+          <!-- Rewind 10s -->
+          <button id="btn-rewind" class="ctrl-btn" title="Rewind 10s (Left Arrow)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+          </button>
+
+          <!-- Play / Pause -->
+          <button id="btn-play" class="ctrl-btn" title="Play (Space)">
+            <svg id="icon-play" width="22" height="22" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg id="icon-pause" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+
+          <!-- Forward 10s -->
+          <button id="btn-forward" class="ctrl-btn" title="Forward 10s (Right Arrow)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+          </button>
+
+          <!-- Volume -->
+          <div class="volume-area" id="volume-area">
+            <button id="btn-mute" class="ctrl-btn" title="Mute (M)">
+              <svg id="icon-vol-high" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <svg id="icon-vol-low" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <svg id="icon-vol-mute" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            </button>
+          </div>
+
+          <!-- Time Display -->
+          <span id="time-display" class="time-display">0:00 / 0:00</span>
+        </div>
+
+        <div class="controls-right">
+          <!-- Server selector -->
+          <div class="dropdown-anchor" id="anchor-servers">
+            <button id="btn-servers" class="ctrl-btn" title="Servers">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+            </button>
+            <div id="menu-servers" class="dropdown-menu hidden">
+              <div class="menu-title">Servers</div>
+              <div id="server-options" class="menu-options"></div>
+            </div>
+          </div>
+
+          <!-- Speed -->
+          <div class="dropdown-anchor" id="anchor-speed">
+            <button id="btn-speed" class="ctrl-btn" title="Speed">
+              <span id="speed-label" class="speed-label">1x</span>
+            </button>
+            <div id="menu-speed" class="dropdown-menu hidden">
+              <div class="menu-title">Speed</div>
+              <div id="speed-options" class="menu-options"></div>
+            </div>
+          </div>
+
+          <!-- Settings (Quality & Auto Skip) -->
+          <div class="dropdown-anchor" id="anchor-settings">
+            <button id="btn-settings" class="ctrl-btn" title="Settings">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span id="quality-badge" class="quality-badge hidden">HD</span>
+            </button>
+            <div id="menu-settings" class="dropdown-menu hidden" style="width: 220px; padding: 0;">
+              
+              <!-- Main Panel -->
+              <div id="panel-main" class="settings-panel">
+                <div class="menu-title" style="padding: 10px 14px 4px;">Settings</div>
+                <button class="settings-item" id="btn-open-quality">
+                  <span>Quality</span>
+                  <span class="settings-val" id="val-quality">Auto (1080p)</span>
+                </button>
+                <button class="settings-item" id="btn-open-autoskip">
+                  <span>Auto Skip</span>
+                  <span class="settings-val" id="val-autoskip">Off</span>
+                </button>
+                <button class="settings-item" id="btn-open-autoplay">
+                  <span>Auto Play</span>
+                  <span class="settings-val" id="val-autoplay">On</span>
+                </button>
+              </div>
+
+              <!-- Quality Panel -->
+              <div id="panel-quality" class="settings-panel hidden">
+                <button class="settings-back-btn" id="btn-back-quality">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  Quality
+                </button>
+                <div id="quality-options" class="menu-options" style="padding-bottom: 8px;"></div>
+              </div>
+
+              <!-- Auto Skip Panel -->
+              <div id="panel-autoskip" class="settings-panel hidden">
+                <button class="settings-back-btn" id="btn-back-autoskip">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  Auto Skip
+                </button>
+                <div class="menu-options" id="autoskip-options" style="padding-bottom: 8px;">
+                  <button class="menu-option" id="btn-autoskip-on">On</button>
+                  <button class="menu-option active" id="btn-autoskip-off">Off</button>
+                </div>
+              </div>
+
+              <!-- Auto Play Panel -->
+              <div id="panel-autoplay" class="settings-panel hidden">
+                <button class="settings-back-btn" id="btn-back-autoplay">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  Auto Play
+                </button>
+                <div class="menu-options" id="autoplay-options" style="padding-bottom: 8px;">
+                  <button class="menu-option active" id="btn-autoplay-on">On</button>
+                  <button class="menu-option" id="btn-autoplay-off">Off</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Subtitles -->
+          <div class="dropdown-anchor" id="anchor-subs">
+            <button id="btn-subs" class="ctrl-btn" title="Subtitles (C)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><text x="12" y="15" text-anchor="middle" fill="white" stroke="none" font-size="8" font-weight="700" font-family="Inter,sans-serif">CC</text></svg>
+            </button>
+            <div id="menu-subs" class="dropdown-menu hidden">
+              <div class="menu-title">Subtitles</div>
+              <div id="sub-options" class="menu-options"></div>
+            </div>
+          </div>
+
+
+
+
+          <!-- Fullscreen -->
+          <button id="btn-fullscreen" class="ctrl-btn" title="Fullscreen (F)">
+            <svg id="icon-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            <svg id="icon-compress" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+  <script src="/embed/assets/embed.js"></script>
+</body>
+</html>
