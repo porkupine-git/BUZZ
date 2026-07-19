@@ -341,7 +341,7 @@ app.use((req, res) => {
   res.json({ 
     status: "ok", 
     message: "Aniko Embed Provider is active! 🚀", 
-    docs: "/embed",
+    docs: "/",
     usage: "/embed/ani/:anilistId/:epNum/:audio"
   });
 });
