@@ -876,8 +876,8 @@
         addSubtitleTracks();
         if (autoplay || isAutoPlay || !video.paused) {
           video.play().catch(() => {
-            video.muted = true;
-            video.play().catch(() => { });
+            // Autoplay blocked by browser. Leave it paused with sound on.
+            console.log("Autoplay with sound was blocked by the browser. Waiting for user interaction.");
           });
         }
       });
@@ -916,8 +916,7 @@
           addSubtitleTracks();
           if (autoplay || isAutoPlay) {
             video.play().catch(() => {
-              video.muted = true;
-              video.play().catch(() => { });
+              console.log("Autoplay with sound was blocked by the browser. Waiting for user interaction.");
             });
           }
         },
