@@ -121,7 +121,7 @@ app.use((req, res, next) => {
   // 1. Prevent iframe embedding on unauthorized sites
   const cspDomains = ALLOWED_DOMAINS.map(d => {
     if (d === 'localhost' || d === '127.0.0.1') return `http://${d}:*`;
-    return `*${d}`;
+    return `https://${d} https://*.${d}`;
   }).join(' ');
   res.header("Content-Security-Policy", `frame-ancestors 'self' ${cspDomains}`);
 
