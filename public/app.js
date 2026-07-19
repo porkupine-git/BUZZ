@@ -1,4 +1,8 @@
 // ─── State ────────────────────────────────────────────────────────────────────
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? 'https://ritesh0997-hamster09.hf.space' 
+  : '';
+
 const state = {
   currentPage: 'home',
   anilistId: null,
@@ -66,7 +70,7 @@ async function fetchSearch(keyword) {
   $('.home-hero').style.display = 'none';
 
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(keyword)}`);
+    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(keyword)}`);
     const json = await res.json();
     
     if (json.error) throw new Error(json.error);
@@ -123,7 +127,7 @@ async function openAnime(slug, name) {
 
   try {
     // Auto-resolve slug → AniList ID
-    const infoRes = await fetch(`/api/info/${encodeURIComponent(slug)}`);
+    const infoRes = await fetch(`${API_BASE}/api/info/${encodeURIComponent(slug)}`);
     const info = await infoRes.json();
     if (info.error) throw new Error(info.error);
 
@@ -172,7 +176,7 @@ async function loadAnime(anilistId, name) {
 
 async function loadEpisodes(anilistId) {
   try {
-    const res = await fetch(`/api/episodes/${anilistId}`);
+    const res = await fetch(`${API_BASE}/api/episodes/${anilistId}`);
     const json = await res.json();
     if (json.error) throw new Error(json.error);
     state.episodes = json.episodes;
@@ -248,39 +252,30 @@ async function watchEpisode(epNum) {
   // Fetch skip times asynchronously
   fetchSkipTimes(state.anilistId, epNum);
 
-  try {
-    const res = await fetch(`/api/watch/${state.anilistId}/${state.audio}/${epNum}`);
-    const json = await res.json();
-    if (json.error) throw new Error(json.error);
+  // Clear previous native player if any
+  const plyrEl = $('.plyr');
+  if (plyrEl) plyrEl.style.display = 'none';
+  const videoPlayer = $('#videoPlayer');
+  if (videoPlayer) videoPlayer.style.display = 'none';
+  if (state.hls) { state.hls.destroy(); state.hls = null; }
 
-    const key = state.audio === 'sub' ? 'ssub' : 'sdub';
-    const data = json[key];
-    if (!data?.streams?.length) throw new Error('No streams found');
-
-    state.streams = data.streams;
-    renderServers(data.streams);
-
-    // Load subtitles
-    if (data.subtitles?.length) {
-      loadSubtitles(data.subtitles);
-    } else {
-      loadSubtitles([]);
-    }
-
-    // Auto-play first HLS stream
-    const hlsStream = data.streams.find(s => s.type === 'hls');
-    if (hlsStream) {
-      playHLS(hlsStream.url);
-    } else {
-      playerLoading.classList.add('hidden');
-      playerError.classList.remove('hidden');
-      playerErrorMsg.textContent = 'No direct stream available. Try an embed server.';
-    }
-  } catch (err) {
-    playerLoading.classList.add('hidden');
-    playerError.classList.remove('hidden');
-    playerErrorMsg.textContent = err.message;
+  // Use the embed player directly to prevent leaking the backend streaming API
+  let iframe = $('#playerContainer iframe.main-embed');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.className = 'main-embed';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('allow', 'autoplay; picture-in-picture');
+    $('#playerContainer').appendChild(iframe);
   }
+
+  // Load via API_BASE to support localhost testing
+  iframe.src = `${API_BASE}/embed/ani/${state.anilistId}/${epNum}/${state.audio}?autoplay=1`;
+  
+  playerLoading.classList.add('hidden');
 }
 
 function renderServers(streams) {

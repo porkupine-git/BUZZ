@@ -1277,7 +1277,13 @@
       setStatus('info', 'Loading player...');
       
       try {
-        const embedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
+        let embedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
+        
+        // When testing on localhost with static server, route to player (clean URL) with query params to avoid 301 redirects stripping them
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          embedPath = `/embed/player?anilistId=${anilistId}&epNum=${epNum}&audio=${selectedAudio}`;
+        }
+        
         const baseUrl = window.location.origin;
         const fullUrl = baseUrl + embedPath;
 
@@ -1311,8 +1317,9 @@
         }
       }, 15000);
 
-      // Show generated code
-      const embedCode = `<iframe\n  src="${baseUrl}${embedPath}"\n  width="800"\n  height="450"\n  frameborder="0"\n  allowfullscreen\n  allow="autoplay; picture-in-picture"\n></iframe>`;
+      // Show generated code (always show the clean production URL)
+      const cleanEmbedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
+      const embedCode = `<iframe\n  src="${baseUrl}${cleanEmbedPath}"\n  width="800"\n  height="450"\n  frameborder="0"\n  allowfullscreen\n  allow="autoplay; picture-in-picture"\n></iframe>`;
 
       codeEl.textContent = embedCode;
       codeWrap.style.display = 'block';
