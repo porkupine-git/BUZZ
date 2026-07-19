@@ -188,7 +188,7 @@ app.get('/embed', (req, res) => {
   if (req.query.token) {
     return res.sendFile(path.join(__dirname, 'public', 'embed', 'player.html'));
   }
-  res.sendFile(path.join(__dirname, 'public', 'embed', 'index.html'));
+  res.redirect('/');
 });
 
 // Simple URL embed (AniList ID)
