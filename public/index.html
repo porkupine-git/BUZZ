@@ -1325,12 +1325,6 @@
       }
     });
 
-    // Auto-load player on page initialization
-    window.addEventListener('DOMContentLoaded', () => {
-      // Small delay to ensure everything is ready
-      setTimeout(() => btnLoad.click(), 500);
-    });
-
     // Enter key support in inputs
     tryAnilist.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') btnLoad.click();
