@@ -349,7 +349,13 @@ app.use('/api/proxy', async (req, res) => {
   }
 });
 
-// Fallback for root or unknown routes
+// Serve the frontend documentation / landing page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Fallback for unknown API routes
 app.use((req, res) => {
   res.json({
     status: "ok",
