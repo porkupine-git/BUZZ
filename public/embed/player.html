@@ -179,6 +179,10 @@
                   <span>Auto Play</span>
                   <span class="settings-val" id="val-autoplay">On</span>
                 </button>
+                <button class="settings-item" id="btn-open-subs">
+                  <span>Captions</span>
+                  <span class="settings-val" id="val-subs">Off</span>
+                </button>
               </div>
 
               <!-- Quality Panel -->
@@ -214,20 +218,17 @@
                 </div>
               </div>
 
+              <!-- Captions Panel -->
+              <div id="panel-subs" class="settings-panel hidden">
+                <button class="settings-back-btn" id="btn-back-subs">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  Captions
+                </button>
+                <div id="sub-options" class="menu-options" style="padding-bottom: 8px;"></div>
+              </div>
+
             </div>
           </div>
-
-          <!-- Subtitles -->
-          <div class="dropdown-anchor" id="anchor-subs">
-            <button id="btn-subs" class="ctrl-btn" title="Subtitles (C)">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><text x="12" y="15" text-anchor="middle" fill="white" stroke="none" font-size="8" font-weight="700" font-family="Inter,sans-serif">CC</text></svg>
-            </button>
-            <div id="menu-subs" class="dropdown-menu hidden">
-              <div class="menu-title">Subtitles</div>
-              <div id="sub-options" class="menu-options"></div>
-            </div>
-          </div>
-
 
 
 

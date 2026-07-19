@@ -124,9 +124,11 @@
   const valAutoSkip = $("val-autoskip");
   const qualityOptions = $("quality-options");
   const qualityBadge = $("quality-badge");
-  const btnSubs = $("btn-subs");
-  const menuSubs = $("menu-subs");
   const subOptions = $("sub-options");
+  const panelSubs = $("panel-subs");
+  const btnOpenSubs = $("btn-open-subs");
+  const btnBackSubs = $("btn-back-subs");
+  const valSubs = $("val-subs");
   const btnAutoSkipOn = $("btn-autoskip-on");
   const btnAutoSkipOff = $("btn-autoskip-off");
   const panelAutoPlay = $("panel-autoplay");
@@ -458,7 +460,7 @@
   }
 
   function closeAllMenus() {
-    [menuServers, menuSpeed, menuSettings, menuSubs].forEach((m) =>
+    [menuServers, menuSpeed, menuSettings].forEach((m) =>
       m.classList.add("hidden")
     );
     if (panelMain) {
@@ -466,6 +468,7 @@
       panelQuality.classList.add("hidden");
       panelAutoSkip.classList.add("hidden");
       if (panelAutoPlay) panelAutoPlay.classList.add("hidden");
+      if (panelSubs) panelSubs.classList.add("hidden");
     }
     activeMenu = null;
   }
@@ -505,6 +508,18 @@
         panelMain.classList.remove("hidden");
       });
     }
+    if (btnOpenSubs) {
+      btnOpenSubs.addEventListener("click", (e) => {
+        e.stopPropagation();
+        panelMain.classList.add("hidden");
+        panelSubs.classList.remove("hidden");
+      });
+      btnBackSubs.addEventListener("click", (e) => {
+        e.stopPropagation();
+        panelSubs.classList.add("hidden");
+        panelMain.classList.remove("hidden");
+      });
+    }
   }
 
   btnServers.addEventListener("click", (e) => {
@@ -518,10 +533,6 @@
   btnSettings.addEventListener("click", (e) => {
     e.stopPropagation();
     toggleMenu(menuSettings);
-  });
-  btnSubs.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleMenu(menuSubs);
   });
 
   // Close menus on outside click
@@ -634,13 +645,20 @@
     speedOptions.appendChild(btn);
   });
 
-  // ─── Build Subtitle Menu ───────────────────────────────────
+  // ─── Build Captions Menu ────────────────────────────────────
   function buildSubMenu(subs) {
     subOptions.innerHTML = "";
+    if (!subs || subs.length === 0) {
+      valSubs.textContent = "Unavailable";
+      btnOpenSubs.style.display = "none";
+      return;
+    }
+
+    btnOpenSubs.style.display = "flex";
 
     // Off option
     const offBtn = document.createElement("button");
-    offBtn.className = "menu-option active";
+    offBtn.className = "menu-option" + (activeSubTrack === -1 ? " active" : "");
     offBtn.textContent = "Off";
     offBtn.addEventListener("click", () => {
       setSubTrack(-1);
@@ -665,10 +683,17 @@
     for (let i = 0; i < video.textTracks.length; i++) {
       video.textTracks[i].mode = i === index ? "showing" : "hidden";
     }
-    subOptions.querySelectorAll(".menu-option").forEach((btn, i) => {
-      btn.classList.toggle("active", i === index + 1); // +1 because of "Off"
+    Array.from(subOptions.children).forEach((btn, i) => {
+      btn.classList.toggle("active", i - 1 === index);
     });
-    btnSubs.classList.toggle("active-sub", index !== -1);
+
+    if (valSubs) {
+      if (index === -1) {
+        valSubs.textContent = "Off";
+      } else if (subtitleData[index]) {
+        valSubs.textContent = subtitleData[index].label || subtitleData[index].language || "On";
+      }
+    }
   }
 
   // ─── Skip Intro / Outro ────────────────────────────────────
