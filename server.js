@@ -17,10 +17,10 @@ const apiCache = new NodeCache({ stdTTL: 3600 });
 const cacheMiddleware = (ttlSeconds) => {
   return (req, res, next) => {
     if (req.method !== 'GET') return next();
-    
+
     const key = req.originalUrl;
     const cachedResponse = apiCache.get(key);
-    
+
     if (cachedResponse) {
       console.log(`[CACHE HIT] ${key}`);
       return res.json(cachedResponse);
@@ -52,14 +52,14 @@ function getClientIp(req) {
 
 app.use('/api', (req, res, next) => {
   const ip = getClientIp(req);
-  
+
   // Whitelist localhost for testing
   if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip === 'unknown') {
     return next();
   }
 
   const now = Date.now();
-  
+
   if (!rateLimitMap.has(ip)) {
     rateLimitMap.set(ip, { count: 1, start: now });
   } else {
@@ -93,14 +93,14 @@ let envDomain = null;
 if (process.env.EMBED_URL) {
   try {
     envDomain = new URL(process.env.EMBED_URL).hostname;
-  } catch(e) {}
+  } catch (e) { }
 }
 
 const ALLOWED_DOMAINS = envDomain ? [envDomain, 'localhost', '127.0.0.1'] : ['localhost', '127.0.0.1'];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin || req.headers.referer;
-  
+
   // 1. Prevent iframe embedding on unauthorized sites
   const cspDomains = ALLOWED_DOMAINS.map(d => `*${d}`).join(' ');
   res.header("Content-Security-Policy", `frame-ancestors 'self' ${cspDomains}`);
@@ -112,14 +112,14 @@ app.use((req, res, next) => {
       if (ALLOWED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d))) {
         isAllowed = true;
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 
   // 2. Anti-Scraping: Validate Sec-Fetch-* headers (browser fingerprinting)
   // These headers are set by the browser and CANNOT be spoofed via JS (forbidden headers).
   // Scrapers (curl, Python, Postman) either don't send them or send wrong values.
-  const isProtectedPath = req.path.startsWith('/api') || 
-                         (req.path.startsWith('/embed/') && !req.path.startsWith('/embed/assets'));
+  const isProtectedPath = req.path.startsWith('/api') ||
+    (req.path.startsWith('/embed/') && !req.path.startsWith('/embed/assets'));
 
   if (isProtectedPath) {
     const secFetchSite = req.headers['sec-fetch-site'];   // cross-site, same-origin, same-site, none
@@ -132,7 +132,7 @@ app.use((req, res, next) => {
       // Scraper detection: if sec-fetch-site is 'none' it means direct browser/curl access
       // For API calls from iframe: sec-fetch-site should be 'same-origin' or 'same-site'
       // For iframe embed from allowed site: sec-fetch-site should be 'cross-site' or 'same-origin'
-      
+
       const validSites = ['same-origin', 'same-site', 'cross-site'];
       if (!validSites.includes(secFetchSite)) {
         console.log(`[BLOCKED] sec-fetch-site: ${secFetchSite}, IP: ${getClientIp(req)}`);
@@ -152,16 +152,16 @@ app.use((req, res, next) => {
       // Real browsers ALWAYS send these headers (Chrome 76+, Firefox 90+, Safari 16.4+)
       if (!isAllowed) {
         console.log(`[BLOCKED] No Sec-Fetch headers, IP: ${getClientIp(req)}`);
-        return res.status(403).json({ 
-          error: "Forbidden: Access denied. Scraping or unauthorized embedding is not allowed." 
+        return res.status(403).json({
+          error: "Forbidden: Access denied. Scraping or unauthorized embedding is not allowed."
         });
       }
     }
 
     // Domain check still applies as secondary layer
     if (!isAllowed) {
-      return res.status(403).json({ 
-        error: "Forbidden: Unauthorized domain." 
+      return res.status(403).json({
+        error: "Forbidden: Unauthorized domain."
       });
     }
   }
@@ -173,10 +173,10 @@ app.use((req, res, next) => {
     // Fallback so local docs page works
     res.header("Access-Control-Allow-Origin", "http://localhost:7860");
   }
-  
+
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  
+
   if (req.method === "OPTIONS") return res.sendStatus(200);
   next();
 });
@@ -239,7 +239,7 @@ app.get('/api/info/:slug', cacheMiddleware(43200), async (req, res) => {
 app.get('/api/watch/:anilistId/:audio/:epNum', cacheMiddleware(1800), async (req, res) => {
   try {
     const { anilistId, audio, epNum } = req.params;
-    
+
     // Server-level anti-scraping already ensures only allowed domains or direct embedded iframes can hit this.
     const data = await scraper.getWatch(anilistId, audio, parseInt(epNum));
     res.json(data);
@@ -268,7 +268,7 @@ app.use('/api/proxy', async (req, res) => {
   try {
     const targetUrl = req.query.url;
     const referer = req.query.referer || 'https://megaplay.buzz/';
-    
+
     if (!targetUrl) return res.status(400).send('Missing url parameter');
 
     const headers = {
@@ -325,7 +325,7 @@ app.use('/api/proxy', async (req, res) => {
         }
         return trimmed;
       }).join('\n');
-      
+
       return res.send(rewritten);
     } else {
       return response.data.pipe(res);
@@ -338,9 +338,9 @@ app.use('/api/proxy', async (req, res) => {
 
 // Fallback for root or unknown routes
 app.use((req, res) => {
-  res.json({ 
-    status: "ok", 
-    message: "Aniko Embed Provider is active! 🚀", 
+  res.json({
+    status: "ok",
+    message: "Aniko Embed Provider is active! 🚀",
     docs: "/",
     usage: "/embed/ani/:anilistId/:epNum/:audio"
   });
