@@ -21,6 +21,9 @@ const cacheMiddleware = (ttlSeconds) => {
     const key = req.originalUrl;
     const cachedResponse = apiCache.get(key);
 
+    // Tell Cloudflare and browsers to cache this response
+    res.set('Cache-Control', `public, max-age=${ttlSeconds}, s-maxage=${ttlSeconds}`);
+
     if (cachedResponse) {
       console.log(`[CACHE HIT] ${key}`);
       return res.json(cachedResponse);
