@@ -157,7 +157,7 @@
   let currentQualityLevel = -1; // auto
   let activeSubTrack = -1;
   let isAutoSkip = localStorage.getItem("aniko_autoskip") === "true"; // Default false
-  let isAutoPlay = localStorage.getItem("aniko_autoplay") !== "false"; // Default true
+  let isAutoPlay = localStorage.getItem("aniko_autoplay") === "true"; // Default false
 
   // ─── Utilities ──────────────────────────────────────────────
   function formatTime(s) {
