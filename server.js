@@ -119,7 +119,10 @@ app.use((req, res, next) => {
   const origin = req.headers.origin || req.headers.referer;
 
   // 1. Prevent iframe embedding on unauthorized sites
-  const cspDomains = ALLOWED_DOMAINS.map(d => `*${d}`).join(' ');
+  const cspDomains = ALLOWED_DOMAINS.map(d => {
+    if (d === 'localhost' || d === '127.0.0.1') return `http://${d}:*`;
+    return `*${d}`;
+  }).join(' ');
   res.header("Content-Security-Policy", `frame-ancestors 'self' ${cspDomains}`);
 
   let isAllowed = false;
