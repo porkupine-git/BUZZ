@@ -89,8 +89,9 @@
         let embedPath = `/embed/ani/${anilistId}/${epNum}/${selectedAudio}`;
         
         
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const baseUrl = isLocal ? 'https://ritesh0997-hamster09.hf.space' : window.location.origin;
+        // Since backend is on Hugging Face and frontend is on Cloudflare Pages,
+        // we must always point to the Hugging Face URL for the iframe embed.
+        const baseUrl = 'https://ritesh0997-hamster09.hf.space';
         const fullUrl = baseUrl + embedPath;
 
         // Remove old iframe if any
