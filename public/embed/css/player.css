@@ -112,13 +112,23 @@ video::cue {
 .overlay {
   position: absolute;
   inset: 0;
-  z-index: 50;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.8);
   gap: 16px;
+}
+
+/* Loading sits BEHIND controls so buttons stay usable during buffering */
+#overlay-loading {
+  z-index: 15;
+  pointer-events: none;
+}
+
+/* Error overlay blocks everything — user must retry */
+#overlay-error {
+  z-index: 50;
 }
 
 /* Loading Ring Animation */
@@ -245,11 +255,49 @@ video::cue {
   pointer-events: auto;
 }
 
+/* ─── Cast Button (top-left) ─────────────────────────────────── */
+.cast-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.cast-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.cast-btn:active {
+  transform: scale(0.92);
+}
+
+.cast-btn.casting {
+  background: rgba(99, 102, 241, 0.25);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.cast-btn.casting svg {
+  stroke: var(--accent);
+}
+
 .video-title {
   font-size: 14px;
   font-weight: 600;
   color: #fff;
   text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 
 .watermark {
@@ -269,15 +317,6 @@ video::cue {
 
 .watermark:hover {
   color: rgba(255, 255, 255, 0.7);
-}
-
-
-
-.video-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 60%;
 }
 
 /* ─── Skip Buttons ───────────────────────────────────────────── */
@@ -460,7 +499,7 @@ video::cue {
 }
 
 .ctrl-btn.active-sub {
-  color: var(--accent-light);
+  color: var(--accent);
 }
 
 .ctrl-btn:hover {

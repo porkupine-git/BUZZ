@@ -26,7 +26,6 @@
 
   // ─── Parse URL & Config ─────────────────────────────────────
   const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
 
   let mode, config;
   const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -135,6 +134,7 @@
   const btnFullscreen = $("btn-fullscreen");
   const iconExpand = $("icon-expand");
   const iconCompress = $("icon-compress");
+  const btnCast = $("btn-cast");
 
   // ─── State ──────────────────────────────────────────────────
   let hls = null;
@@ -199,6 +199,7 @@
 
   function hideControls() {
     if (activeMenu) return; // don't hide if menu open
+    if (!overlayLoading.classList.contains("hidden")) return; // don't hide during loading
     wrapper.classList.remove("controls-visible");
     wrapper.classList.add("controls-hidden");
   }
@@ -459,6 +460,44 @@
       screen.orientation.unlock();
     }
   });
+
+  // ─── Screen Cast (Remote Playback API) ──────────────────────
+  function initCast() {
+    if (!video.remote || typeof video.remote.prompt !== 'function') return;
+
+    // Check if casting is available
+    video.remote.watchAvailability((available) => {
+      if (available) {
+        btnCast.classList.remove('hidden');
+      } else {
+        btnCast.classList.add('hidden');
+      }
+    }).catch(() => {
+      // watchAvailability not supported, show button anyway and let prompt handle it
+      btnCast.classList.remove('hidden');
+    });
+
+    btnCast.addEventListener('click', (e) => {
+      e.stopPropagation();
+      video.remote.prompt().catch((err) => {
+        console.log('Cast prompt dismissed or failed:', err.message);
+      });
+    });
+
+    video.remote.addEventListener('connecting', () => {
+      btnCast.classList.add('casting');
+    });
+
+    video.remote.addEventListener('connect', () => {
+      btnCast.classList.add('casting');
+    });
+
+    video.remote.addEventListener('disconnect', () => {
+      btnCast.classList.remove('casting');
+    });
+  }
+
+  initCast();
 
   // ─── Dropdown Menus ─────────────────────────────────────────
   function toggleMenu(menu) {
@@ -1050,7 +1089,6 @@
       case "arrowup":
         e.preventDefault();
         video.volume = Math.min(1, video.volume + 0.1);
-        volumeSlider.value = video.volume;
         video.muted = false;
         updateVolumeIcon();
         showControls();
@@ -1058,7 +1096,6 @@
       case "arrowdown":
         e.preventDefault();
         video.volume = Math.max(0, video.volume - 0.1);
-        volumeSlider.value = video.volume;
         if (video.volume === 0) video.muted = true;
         updateVolumeIcon();
         showControls();
@@ -1074,7 +1111,12 @@
         break;
       case "p":
         e.preventDefault();
-        btnPip.click();
+        // Toggle Picture-in-Picture if supported
+        if (document.pictureInPictureElement) {
+          document.exitPictureInPicture().catch(() => {});
+        } else if (video.requestPictureInPicture) {
+          video.requestPictureInPicture().catch(() => {});
+        }
         break;
       case "escape":
         closeAllMenus();
@@ -1099,7 +1141,6 @@
       case "aniko:setVolume":
         if (typeof e.data.volume === "number") {
           video.volume = Math.max(0, Math.min(1, e.data.volume));
-          volumeSlider.value = video.volume;
           video.muted = video.volume === 0;
           updateVolumeIcon();
         }
