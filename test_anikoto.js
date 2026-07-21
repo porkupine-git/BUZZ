@@ -2,7 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 
 async function testAnikoto() {
-  const url = 'https://anikototv.to/watch/daemons-of-the-shadow-realm-hxj32/ep-1';
+  const url = process.argv[2] || 'https://anikototv.to/watch/daemons-of-the-shadow-realm-hxj32/ep-1';
   try {
     const { data } = await axios.get(url, {
       headers: { "User-Agent": "Mozilla/5.0", "Referer": "https://anikototv.to/" }
