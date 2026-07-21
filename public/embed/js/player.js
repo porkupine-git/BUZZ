@@ -581,11 +581,14 @@
   function buildServerMenu(streams) {
     serverOptions.innerHTML = "";
     streams.forEach((s, i) => {
+      // Find the real index of this stream in allStreams
+      const realIndex = allStreams.indexOf(s);
       const btn = document.createElement("button");
-      btn.className = "menu-option" + (i === currentStreamIndex ? " active" : "");
+      btn.className = "menu-option" + (realIndex === currentStreamIndex ? " active" : "");
       btn.textContent = s.server || `Server ${i + 1}`;
+      btn.dataset.streamIndex = realIndex;
       btn.addEventListener("click", () => {
-        loadStream(i);
+        loadStream(realIndex);
         closeAllMenus();
       });
       serverOptions.appendChild(btn);
@@ -818,8 +821,9 @@
     }
 
     // Update server menu active state
-    serverOptions.querySelectorAll(".menu-option").forEach((btn, i) => {
-      btn.classList.toggle("active", i === index);
+    serverOptions.querySelectorAll(".menu-option").forEach((btn) => {
+      const btnIndex = parseInt(btn.dataset.streamIndex, 10);
+      btn.classList.toggle("active", btnIndex === index);
     });
 
     let url;
