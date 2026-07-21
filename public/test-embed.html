@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aniko Embed — Test Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e8;
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #6366f1, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #6b6b80;
+      margin-bottom: 24px;
+    }
+
+    /* ─── Controls Panel ─── */
+    .controls-panel {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8888a0;
+    }
+
+    .field input, .field select {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 9px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: #6366f1;
+    }
+
+    .field input[type="number"] { width: 80px; }
+    .field input[type="text"] { width: 140px; }
+    .field input[type="color"] {
+      width: 42px;
+      height: 38px;
+      padding: 4px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .field select {
+      cursor: pointer;
+    }
+
+    .btn-load {
+      background: linear-gradient(135deg, #6366f1, #818cf8);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+    }
+
+    .btn-load:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(99,102,241,0.5);
+    }
+
+    .btn-load:active {
+      transform: translateY(0);
+    }
+
+    /* ─── Player Frame ─── */
+    .player-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    }
+
+    .player-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .player-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #4a4a5e;
+    }
+
+    .player-placeholder svg {
+      opacity: 0.3;
+    }
+
+    .player-placeholder p {
+      font-size: 14px;
+    }
+
+    /* ─── Embed Code Box ─── */
+    .code-section {
+      margin-top: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .code-header span {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8888a0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-copy {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #ccc;
+      font-size: 12px;
+      font-family: inherit;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-copy:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .btn-copy.copied {
+      background: rgba(99,102,241,0.2);
+      border-color: #6366f1;
+      color: #a78bfa;
+    }
+
+    .code-body {
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .code-body code {
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      color: #a78bfa;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    /* ─── Status ─── */
+    .status {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #6b6b80;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #333;
+    }
+
+    .status-dot.loading {
+      background: #f59e0b;
+      animation: pulse 1s infinite;
+    }
+
+    .status-dot.ready {
+      background: #22c55e;
+    }
+
+    .status-dot.error {
+      background: #ef4444;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ─── PostMessage Events Log ─── */
+    .events-log {
+      margin-top: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .events-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .events-header span {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8888a0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-clear {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #6b6b80;
+      font-size: 11px;
+      font-family: inherit;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-clear:hover {
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .events-body {
+      padding: 12px 16px;
+      max-height: 160px;
+      overflow-y: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #6b6b80;
+    }
+
+    .events-body:empty::after {
+      content: 'No events yet. Load a player to see events...';
+      color: #3a3a4e;
+    }
+
+    .event-line {
+      display: flex;
+      gap: 10px;
+    }
+
+    .event-time { color: #4a4a5e; }
+    .event-type { color: #6366f1; font-weight: 600; }
+    .event-data { color: #8888a0; }
+
+    @media (max-width: 600px) {
+      body { padding: 16px 12px; }
+      .controls-panel { gap: 10px; }
+      .field input[type="text"] { width: 110px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎬 Aniko Embed — Test Page</h1>
+    <p class="subtitle">This page simulates how a third-party website would embed the Aniko player.</p>
+
+    <!-- Controls -->
+    <div class="controls-panel">
+      <div class="field">
+        <label>AniList ID</label>
+        <input type="text" id="inp-anilist" value="154587" placeholder="e.g. 154587">
+      </div>
+      <div class="field">
+        <label>Episode</label>
+        <input type="number" id="inp-episode" value="1" min="1">
+      </div>
+      <div class="field">
+        <label>Audio</label>
+        <select id="sel-audio">
+          <option value="sub" selected>SUB</option>
+          <option value="dub">DUB</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Accent</label>
+        <input type="color" id="inp-color" value="#6366f1">
+      </div>
+      <button class="btn-load" id="btn-load" onclick="loadEmbed()">▶ Load Player</button>
+    </div>
+
+    <!-- Player -->
+    <div class="player-frame" id="player-frame">
+      <div class="player-placeholder" id="placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <p>Click "Load Player" to test the embed</p>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Ready</span>
+    </div>
+
+    <!-- Embed Code -->
+    <div class="code-section">
+      <div class="code-header">
+        <span>Embed Code</span>
+        <button class="btn-copy" id="btn-copy" onclick="copyCode()">Copy</button>
+      </div>
+      <div class="code-body">
+        <code id="code-output">&lt;iframe
+  src="https://anixo.buzz/embed/ani/154587/1/sub"
+  width="800"
+  height="450"
+  frameborder="0"
+  allowfullscreen
+  allow="autoplay; picture-in-picture"
+&gt;&lt;/iframe&gt;</code>
+      </div>
+    </div>
+
+    <!-- Events Log -->
+    <div class="events-log">
+      <div class="events-header">
+        <span>📡 PostMessage Events</span>
+        <button class="btn-clear" onclick="clearEvents()">Clear</button>
+      </div>
+      <div class="events-body" id="events-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const BASE = 'https://anixo.buzz';
+
+    function getEmbedUrl() {
+      const anilist = document.getElementById('inp-anilist').value.trim() || '154587';
+      const episode = document.getElementById('inp-episode').value || '1';
+      const audio = document.getElementById('sel-audio').value;
+      const color = encodeURIComponent(document.getElementById('inp-color').value);
+      return `${BASE}/embed/ani/${anilist}/${episode}/${audio}?color=${color}`;
+    }
+
+    function updateCode() {
+      const anilist = document.getElementById('inp-anilist').value.trim() || '154587';
+      const episode = document.getElementById('inp-episode').value || '1';
+      const audio = document.getElementById('sel-audio').value;
+      document.getElementById('code-output').textContent =
+        `<iframe\n  src="https://anixo.buzz/embed/ani/${anilist}/${episode}/${audio}"\n  width="800"\n  height="450"\n  frameborder="0"\n  allowfullscreen\n  allow="autoplay; picture-in-picture"\n></iframe>`;
+    }
+
+    function setStatus(type, msg) {
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      dot.className = 'status-dot ' + type;
+      text.textContent = msg;
+    }
+
+    function loadEmbed() {
+      const frame = document.getElementById('player-frame');
+      const placeholder = document.getElementById('placeholder');
+      const url = getEmbedUrl();
+
+      // Remove old iframe
+      const oldIframe = frame.querySelector('iframe');
+      if (oldIframe) oldIframe.remove();
+      if (placeholder) placeholder.style.display = 'none';
+
+      setStatus('loading', 'Loading player...');
+
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.allowFullscreen = true;
+      iframe.allow = 'autoplay; picture-in-picture';
+      frame.appendChild(iframe);
+
+      updateCode();
+
+      // Timeout fallback
+      const timeout = setTimeout(() => {
+        setStatus('ready', 'Player loaded (no ready event received)');
+      }, 10000);
+
+      // Listen for ready event
+      const handler = (e) => {
+        if (e.data && e.data.type === 'aniko:ready') {
+          clearTimeout(timeout);
+          setStatus('ready', `Player ready — ${e.data.streams} server(s), ${e.data.subtitles} subtitle(s)`);
+          window.removeEventListener('message', handler);
+        }
+      };
+      window.addEventListener('message', handler);
+    }
+
+    // Listen for all aniko postMessage events
+    window.addEventListener('message', (e) => {
+      if (!e.data || typeof e.data.type !== 'string' || !e.data.type.startsWith('aniko:')) return;
+
+      const log = document.getElementById('events-body');
+      const time = new Date().toLocaleTimeString();
+      const type = e.data.type.replace('aniko:', '');
+
+      // Skip noisy timeupdate for log (too frequent)
+      if (type === 'timeupdate') return;
+
+      const line = document.createElement('div');
+      line.className = 'event-line';
+
+      const extra = { ...e.data };
+      delete extra.type;
+      const dataStr = Object.keys(extra).length > 0 ? JSON.stringify(extra) : '';
+
+      line.innerHTML = `<span class="event-time">${time}</span><span class="event-type">${type}</span><span class="event-data">${dataStr}</span>`;
+      log.appendChild(line);
+      log.scrollTop = log.scrollHeight;
+    });
+
+    function clearEvents() {
+      document.getElementById('events-body').innerHTML = '';
+    }
+
+    function copyCode() {
+      const code = document.getElementById('code-output').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('btn-copy');
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // Auto-update code on input change
+    ['inp-anilist', 'inp-episode', 'sel-audio', 'inp-color'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateCode);
+      document.getElementById(id).addEventListener('change', updateCode);
+    });
+  </script>
+
+</body>
+</html>
