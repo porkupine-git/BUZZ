@@ -317,6 +317,19 @@
     postMsg("ended");
   });
 
+  // Native Buffering / Loading Events
+  video.addEventListener("waiting", () => {
+    showLoading();
+  });
+
+  video.addEventListener("playing", () => {
+    hideLoading();
+  });
+
+  video.addEventListener("canplay", () => {
+    hideLoading();
+  });
+
   // ─── Seek Bar ───────────────────────────────────────────────
   function updateSeek() {
     if (isSeeking || !video.duration) return;
@@ -929,8 +942,7 @@
           // Non-fatal errors: handle buffer stalls gracefully
           if (data.details === 'bufferStalledError') {
             console.log("Buffer stalled, nudging playback...");
-            // HLS.js handles nudge internally, just show loading
-            showLoading();
+            // Native HTML5 'waiting' event will handle the loading screen automatically
           }
         }
       });
