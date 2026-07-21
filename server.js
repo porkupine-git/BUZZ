@@ -118,23 +118,11 @@ const ALLOWED_DOMAINS = envDomain ? [envDomain, 'localhost', '127.0.0.1', 'anixo
 app.use((req, res, next) => {
   const origin = req.headers.origin || req.headers.referer;
 
-  // 1. Prevent iframe embedding on unauthorized sites
-  const cspDomains = ALLOWED_DOMAINS.map(d => {
-    if (d === 'localhost' || d === '127.0.0.1') return `http://${d}:*`;
-    return `https://${d} https://*.${d}`;
-  }).join(' ');
-  res.header("Content-Security-Policy", `frame-ancestors 'self' ${cspDomains}`);
+  // 1. Allow iframe embedding on ANY site (Public Embed Provider)
+  res.header("Content-Security-Policy", "frame-ancestors *");
 
-  let isAllowed = false;
-  if (origin) {
-    try {
-      const hostname = new URL(origin).hostname;
-      const serverHost = req.hostname || (req.headers.host ? req.headers.host.split(':')[0] : '');
-      if (hostname === serverHost || ALLOWED_DOMAINS.some(d => hostname === d || hostname.endsWith('.' + d))) {
-        isAllowed = true;
-      }
-    } catch (e) { }
-  }
+  // Automatically allow any origin since it's public
+  let isAllowed = true;
 
   // 2. Anti-Scraping: Validate Sec-Fetch-* headers (browser fingerprinting)
   // These headers are set by the browser and CANNOT be spoofed via JS (forbidden headers).
@@ -179,12 +167,8 @@ app.use((req, res, next) => {
       }
     }
 
-    // Domain check still applies as secondary layer
-    if (!isAllowed) {
-      return res.status(403).json({
-        error: "Forbidden: Unauthorized domain."
-      });
-    }
+    // Domain check removed because this is a public embed provider.
+    // The Sec-Fetch headers above are sufficient to block 99% of simple scrapers.
   }
 
   // 3. Strict CORS configuration
