@@ -309,7 +309,7 @@ app.use('/api/proxy', async (req, res) => {
       validateStatus: () => true,
       httpAgent,
       httpsAgent,
-      timeout: 15000 // 15 seconds timeout
+      timeout: (isM3u8 || isSubtitle) ? 15000 : 0 // No timeout for video streams to prevent aborts
     });
 
     if (response.status >= 400) {
@@ -330,7 +330,7 @@ app.use('/api/proxy', async (req, res) => {
 
     if (isM3u8) {
       const targetBase = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-      const proxyBase = `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
+      const proxyBase = `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
 
       const rewritten = response.data.split('\n').map(line => {
         const trimmed = line.trim();

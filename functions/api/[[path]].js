@@ -10,6 +10,7 @@ export async function onRequest(context) {
   // (This allows other websites to embed anixo.buzz player)
   request.headers.set('Origin', 'https://anixo.buzz');
   request.headers.set('Referer', 'https://anixo.buzz/');
+  request.headers.set('X-Forwarded-Host', 'anixo.buzz');
   
   // Remove cloudflare specific headers that might mess with HF
   request.headers.delete('x-real-ip');
