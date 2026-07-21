@@ -134,7 +134,7 @@
   const btnFullscreen = $("btn-fullscreen");
   const iconExpand = $("icon-expand");
   const iconCompress = $("icon-compress");
-  const btnCast = $("btn-cast");
+
 
   // ─── State ──────────────────────────────────────────────────
   let hls = null;
@@ -461,43 +461,8 @@
     }
   });
 
-  // ─── Screen Cast (Remote Playback API) ──────────────────────
-  function initCast() {
-    if (!video.remote || typeof video.remote.prompt !== 'function') return;
 
-    // Check if casting is available
-    video.remote.watchAvailability((available) => {
-      if (available) {
-        btnCast.classList.remove('hidden');
-      } else {
-        btnCast.classList.add('hidden');
-      }
-    }).catch(() => {
-      // watchAvailability not supported, show button anyway and let prompt handle it
-      btnCast.classList.remove('hidden');
-    });
 
-    btnCast.addEventListener('click', (e) => {
-      e.stopPropagation();
-      video.remote.prompt().catch((err) => {
-        console.log('Cast prompt dismissed or failed:', err.message);
-      });
-    });
-
-    video.remote.addEventListener('connecting', () => {
-      btnCast.classList.add('casting');
-    });
-
-    video.remote.addEventListener('connect', () => {
-      btnCast.classList.add('casting');
-    });
-
-    video.remote.addEventListener('disconnect', () => {
-      btnCast.classList.remove('casting');
-    });
-  }
-
-  initCast();
 
   // ─── Dropdown Menus ─────────────────────────────────────────
   function toggleMenu(menu) {

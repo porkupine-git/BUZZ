@@ -255,39 +255,8 @@ video::cue {
   pointer-events: auto;
 }
 
-/* ─── Cast Button (top-left) ─────────────────────────────────── */
-.cast-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.08);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-left: 10px;
-}
 
-.cast-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
 
-.cast-btn:active {
-  transform: scale(0.92);
-}
-
-.cast-btn.casting {
-  background: rgba(99, 102, 241, 0.25);
-  border: 1px solid var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
-}
-
-.cast-btn.casting svg {
-  stroke: var(--accent);
-}
 
 .video-title {
   font-size: 14px;
