@@ -203,15 +203,20 @@
     wrapper.classList.add("controls-hidden");
   }
 
-  wrapper.addEventListener("mousemove", showControls);
+  // Touch support state
+  let lastTap = 0;
+  let isTouchDevice = false;
+
+  wrapper.addEventListener("mousemove", () => {
+    // Ignore synthetic mousemove events triggered by touch devices
+    if (isTouchDevice && Date.now() - lastTap < 500) return;
+    showControls();
+  });
+  
   wrapper.addEventListener("mouseleave", () => {
     clearTimeout(controlsTimer);
     controlsTimer = setTimeout(hideControls, 1000);
   });
-
-  // Touch support
-  let lastTap = 0;
-  let isTouchDevice = false;
 
   clickArea.addEventListener("touchstart", (e) => {
     isTouchDevice = true; // Mark as touch device to prevent click interference
