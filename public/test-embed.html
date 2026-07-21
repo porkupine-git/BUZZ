@@ -396,7 +396,7 @@
   </div>
 
   <script>
-    const BASE = 'https://anixo.buzz';
+    const BASE = window.location.origin;
 
     function getEmbedUrl() {
       const anilist = document.getElementById('inp-anilist').value.trim() || '154587';
@@ -411,7 +411,7 @@
       const episode = document.getElementById('inp-episode').value || '1';
       const audio = document.getElementById('sel-audio').value;
       document.getElementById('code-output').textContent =
-        `<iframe\n  src="https://anixo.buzz/embed/ani/${anilist}/${episode}/${audio}"\n  width="800"\n  height="450"\n  frameborder="0"\n  allowfullscreen\n  allow="autoplay; picture-in-picture"\n></iframe>`;
+        `<iframe\n  src="${BASE}/embed/ani/${anilist}/${episode}/${audio}"\n  width="800"\n  height="450"\n  frameborder="0"\n  allowfullscreen\n  allow="autoplay; picture-in-picture"\n></iframe>`;
     }
 
     function setStatus(type, msg) {

@@ -278,6 +278,21 @@ async function extractVidWish(realId, audio) {
   } catch { return null; }
 }
 
+async function extractVidTube(realId, audio) {
+  try {
+    const page = await httpGet(`${VIDTUBE}/stream/s-2/${realId}/${audio}`, { Referer: SPOOF_REF, "Accept-Language": "en-US,en;q=0.9" });
+    const m = page.match(/data-id="([^"]*)"/);
+    if (!m?.[1]) return null;
+    const fileId = m[1];
+    const data = await getJSON(
+      `${VIDTUBE}/stream/getSources?id=${fileId}&id=${fileId}`,
+      { Referer: `${VIDTUBE}/`, "X-Requested-With": "XMLHttpRequest" },
+      1
+    );
+    return { fileId, data };
+  } catch { return null; }
+}
+
 // ─── Episode Lookup by AniList ID ────────────────────────────────────────────
 
 /**
@@ -329,13 +344,18 @@ async function extractRawAnikotoStreams(anilistId, audio, epNum) {
     const origin = new URL(embedUrl).origin;
     const extracted = await extractEmbedSource(embedUrl, SPOOF_REF);
 
+    let srvName = item.name;
+    if (srvName.toLowerCase().includes("vidplay")) srvName = "VidTube";
+    if (srvName.toLowerCase().includes("vidstream")) srvName = "Megaplay-2";
+    if (srvName.toLowerCase().includes("vidcloud")) srvName = "VidWish-2";
+
     if (extracted?.data?.sources?.file) {
-      streams.push({ url: extracted.data.sources.file, type: "hls", referer: `${origin}/`, server: item.name, priority: 5, default: streams.length === 0 });
-      for (const t of extracted.data.tracks ?? []) subtitles.push(mapTrack(t, item.name));
+      streams.push({ url: extracted.data.sources.file, type: "hls", referer: `${origin}/`, server: srvName, priority: 5, default: streams.length === 0 });
+      for (const t of extracted.data.tracks ?? []) subtitles.push(mapTrack(t, srvName));
       intro ??= extracted.data.intro ?? skipRange(resolved?.result?.skip_data?.intro) ?? null;
       outro ??= extracted.data.outro ?? skipRange(resolved?.result?.skip_data?.outro) ?? null;
     }
-    streams.push({ url: embedUrl, type: "embed", referer: `${origin}/`, server: `${item.name}-embed`, priority: 4 });
+    streams.push({ url: embedUrl, type: "embed", referer: `${origin}/`, server: `${srvName}-embed`, priority: 4 });
   }));
   return { streams, subtitles, intro, outro };
 }
@@ -378,15 +398,17 @@ async function getWatch(anilistId, audio, epNum) {
     };
   }
 
-  // Step 3: Fast providers (Megaplay, VidWish, VidTube)
+  // Step 3: Concurrent fetch of Fast Providers and Slow Mapper
   const realId = attr("realid");
-  const [megaSources, vidwishResult] = await Promise.allSettled([
+  const [megaSources, vidwishResult, rawAnikotoResult] = await Promise.allSettled([
     getJSON(`${MEGAPLAY}/stream/getSources?id=${fileId}&id=${fileId}`, { Referer: `${MEGAPLAY}/`, "X-Requested-With": "XMLHttpRequest" }, 1),
-    realId ? extractVidWish(realId, audio) : Promise.resolve(null)
+    realId ? extractVidWish(realId, audio) : Promise.resolve(null),
+    extractRawAnikotoStreams(anilistId, audio, epNum)
   ]);
 
-  const mega    = megaSources.status  === "fulfilled" ? megaSources.value  : null;
-  const vidwish = vidwishResult.status === "fulfilled" ? vidwishResult.value : null;
+  const mega       = megaSources.status === "fulfilled" ? megaSources.value : null;
+  const vidwish    = vidwishResult.status === "fulfilled" ? vidwishResult.value : null;
+  const rawAnikoto = rawAnikotoResult.status === "fulfilled" ? rawAnikotoResult.value : null;
 
   // Build streams list (priority ordered)
   const streams = [];
@@ -394,7 +416,6 @@ async function getWatch(anilistId, audio, epNum) {
     streams.push({ url: mega.sources.file, type: "hls", referer: `${MEGAPLAY}/`, server: "Megaplay", priority: 5, default: true });
   }
   streams.push({ url: embedUrl, type: "embed", referer: `${MEGAPLAY}/`, server: "Megaplay-embed", priority: 4 });
-  // Vidtube removed because it was returning incorrect anime streams
   if (vidwish?.data?.sources?.file) {
     streams.push({ url: vidwish.data.sources.file, type: "hls", referer: `${VIDWISH}/`, server: "VidWish", priority: 4 });
   }
@@ -402,30 +423,12 @@ async function getWatch(anilistId, audio, epNum) {
     streams.push({ url: `${VIDWISH}/stream/s-2/${realId}/${audio}`, type: "embed", referer: `${VIDWISH}/`, server: "VidWish-embed", priority: 3 });
   }
 
-  // Step 4: Slow Mapper fallback ONLY if fast providers yielded no HLS streams
-  let mapper = null;
-  const hasFastHls = streams.some(s => s.type === "hls");
-  if (!hasFastHls) {
-    try {
-      const anizip = await getJSON(`${ANIZIP}?anilist_id=${anilistId}`);
-      const enTitle = anizip.titles?.en ?? Object.values(anizip.titles ?? {})[0] ?? "";
-      const malId = anizip.mappings?.mal_id;
-      const jikanShow = malId ? await getJSON(`${JIKAN}/anime/${malId}`).catch(() => null) : null;
-      const { showId } = await findAnikotoShow(enTitle, jikanShow);
-      const listData = await getJSON(`${ANIKOTO}/ajax/episode/list/${showId}`, { "X-Requested-With": "XMLHttpRequest", Referer: `${ANIKOTO}/` });
-      const ep = extractEpisodes(listData.result ?? "").find((e) => e.num === epNum);
-      if (ep?.mal && ep?.slug && ep?.timestamp) {
-        mapper = await getJSON(`${MAPPER}/${ep.mal}/${ep.slug}/${ep.timestamp}`, { Referer: `${ANIKOTO}/` });
+  // Merge streams from rawAnikoto (mapper)
+  if (rawAnikoto?.streams) {
+    for (const s of rawAnikoto.streams) {
+      if (!streams.find((x) => x.url === s.url)) {
+        streams.push(s);
       }
-    } catch {}
-  }
-
-  if (mapper) {
-    const { status: _s, ...providers } = mapper;
-    for (const [name, data] of Object.entries(providers)) {
-      if (/^kiwi.?stream/i.test(name)) continue;
-      const url = audio === "sub" ? data.sub?.url : data.dub?.url;
-      if (url) streams.push({ url, type: "embed", referer: `${ANIKOTO}/`, server: name, priority: 2 });
     }
   }
 
@@ -435,13 +438,25 @@ async function getWatch(anilistId, audio, epNum) {
     ...(vidwish?.data?.tracks ?? []).map((t) => mapTrack(t, "VidWish")),
   ];
 
+  // Merge subtitles from rawAnikoto
+  if (rawAnikoto?.subtitles) {
+    for (const sub of rawAnikoto.subtitles) {
+      if (!subtitles.find((x) => x.file === sub.file)) {
+        subtitles.push(sub);
+      }
+    }
+  }
+
+  const intro = skipRange(mega?.intro || vidwish?.data?.intro || rawAnikoto?.intro) ?? { start: 0, end: 0 };
+  const outro = skipRange(mega?.outro || vidwish?.data?.outro || rawAnikoto?.outro) ?? { start: 0, end: 0 };
+
   return {
     [audioKey]: {
-      streams,
+      streams: streams.sort((a, b) => b.priority - a.priority),
       subtitles,
-      intro: mega?.intro ?? vidwish?.sources?.intro ?? { start: 0, end: 0 },
-      outro: mega?.outro ?? vidwish?.sources?.outro ?? { start: 0, end: 0 },
-      provider: "megaplay+vidwish",
+      intro,
+      outro,
+      provider: "megaplay+vidwish+anikoto",
     },
   };
 }

@@ -802,7 +802,7 @@
   // ─── Stream Loading ─────────────────────────────────────────
   function loadStream(index) {
     currentStreamIndex = index;
-    const stream = hlsStreams[index] || allStreams[index];
+    const stream = allStreams[index];
 
     if (!stream) {
       showError("No streams available");
@@ -824,7 +824,13 @@
 
     let url;
     if (stream.type === "hls") {
-      url = `${API_BASE}/api/proxy?url=${encodeURIComponent(stream.url)}&referer=${encodeURIComponent(stream.referer || "")}`;
+      // Bypass proxy for VidWish, VidTube and VidPlay (and similar) as Cloudflare blocks Node.js axios proxy
+      const srv = stream.server ? stream.server.toLowerCase() : "";
+      if (srv.includes("vidwish") || srv.includes("vidtube") || srv.includes("vidplay")) {
+        url = stream.url;
+      } else {
+        url = `${API_BASE}/api/proxy?url=${encodeURIComponent(stream.url)}&referer=${encodeURIComponent(stream.referer || "")}`;
+      }
     } else {
       url = stream.url;
     }
@@ -929,7 +935,7 @@
               mediaRecoveryAttempts++;
               console.log(`Network recovery attempt ${mediaRecoveryAttempts}...`);
               hls.startLoad();
-            } else if (currentStreamIndex < hlsStreams.length - 1) {
+            } else if (currentStreamIndex < allStreams.length - 1) {
               mediaRecoveryAttempts = 0;
               console.log("Trying next server...");
               loadStream(currentStreamIndex + 1);
@@ -1036,7 +1042,12 @@
 
       // Proxy subtitle files to bypass CORS restrictions on external CDNs
       const referer = getSubReferer(sub);
-      track.src = `${API_BASE}/api/proxy?url=${encodeURIComponent(sub.file)}&referer=${encodeURIComponent(referer)}`;
+      const srcName = sub.source ? sub.source.toLowerCase() : "";
+      if (srcName.includes("vidwish") || srcName.includes("vidtube") || srcName.includes("vidplay")) {
+        track.src = sub.file;
+      } else {
+        track.src = `${API_BASE}/api/proxy?url=${encodeURIComponent(sub.file)}&referer=${encodeURIComponent(referer)}`;
+      }
       video.appendChild(track);
     });
 
