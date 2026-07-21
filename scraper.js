@@ -345,9 +345,10 @@ async function extractRawAnikotoStreams(anilistId, audio, epNum) {
     const extracted = await extractEmbedSource(embedUrl, SPOOF_REF);
 
     let srvName = item.name;
-    if (srvName.toLowerCase().includes("vidplay")) srvName = "VidTube";
-    if (srvName.toLowerCase().includes("vidstream")) srvName = "Megaplay-2";
-    if (srvName.toLowerCase().includes("vidcloud")) srvName = "VidWish-2";
+    if (srvName.toLowerCase().includes("vidplay")) srvName = "AniXo VIP";
+    else if (srvName.toLowerCase().includes("vidstream")) srvName = "AniXo HD-2";
+    else if (srvName.toLowerCase().includes("vidcloud")) srvName = "AniXo Backup";
+    else srvName = "AniXo " + srvName;
 
     if (extracted?.data?.sources?.file) {
       streams.push({ url: extracted.data.sources.file, type: "hls", referer: `${origin}/`, server: srvName, priority: 5, default: streams.length === 0 });
@@ -413,14 +414,14 @@ async function getWatch(anilistId, audio, epNum) {
   // Build streams list (priority ordered)
   const streams = [];
   if (mega?.sources?.file) {
-    streams.push({ url: mega.sources.file, type: "hls", referer: `${MEGAPLAY}/`, server: "Megaplay", priority: 5, default: true });
+    streams.push({ url: mega.sources.file, type: "hls", referer: `${MEGAPLAY}/`, server: "AniXo HD-1", priority: 5, default: true });
   }
-  streams.push({ url: embedUrl, type: "embed", referer: `${MEGAPLAY}/`, server: "Megaplay-embed", priority: 4 });
+  streams.push({ url: embedUrl, type: "embed", referer: `${MEGAPLAY}/`, server: "AniXo HD-1 (Alt)", priority: 4 });
   if (vidwish?.data?.sources?.file) {
-    streams.push({ url: vidwish.data.sources.file, type: "hls", referer: `${VIDWISH}/`, server: "VidWish", priority: 4 });
+    streams.push({ url: vidwish.data.sources.file, type: "hls", referer: `${VIDWISH}/`, server: "AniXo Fast", priority: 4 });
   }
   if (realId) {
-    streams.push({ url: `${VIDWISH}/stream/s-2/${realId}/${audio}`, type: "embed", referer: `${VIDWISH}/`, server: "VidWish-embed", priority: 3 });
+    streams.push({ url: `${VIDWISH}/stream/s-2/${realId}/${audio}`, type: "embed", referer: `${VIDWISH}/`, server: "AniXo Fast (Alt)", priority: 3 });
   }
 
   // Merge streams from rawAnikoto (mapper)
@@ -434,8 +435,8 @@ async function getWatch(anilistId, audio, epNum) {
 
   // Build subtitles
   const subtitles = [
-    ...(mega?.tracks ?? []).map((t) => mapTrack(t, "Megaplay")),
-    ...(vidwish?.data?.tracks ?? []).map((t) => mapTrack(t, "VidWish")),
+    ...(mega?.tracks ?? []).map((t) => mapTrack(t, "AniXo HD-1")),
+    ...(vidwish?.data?.tracks ?? []).map((t) => mapTrack(t, "AniXo Fast")),
   ];
 
   // Merge subtitles from rawAnikoto
