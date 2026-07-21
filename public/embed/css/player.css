@@ -668,6 +668,12 @@ video::cue {
   height: 100vh;
 }
 
+/* Desktop fullscreen: push subtitles up so they don't sit too low */
+:fullscreen video::-webkit-media-text-track-display,
+:-webkit-full-screen video::-webkit-media-text-track-display {
+  transform: translateY(-80px) !important;
+}
+
 /* ─── Mobile fullscreen: smaller subtitles ───────────────────── */
 @media (max-width: 768px) {
   :fullscreen video::cue,
