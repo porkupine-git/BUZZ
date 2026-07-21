@@ -16,6 +16,11 @@
   --radius: 8px;
   --radius-sm: 6px;
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Subtitle Customization Default Variables */
+  --sub-color: #ffffff;
+  --sub-bg: rgba(0, 0, 0, 0.75);
+  --sub-size: clamp(10px, 2.5vw, 18px); /* Default Small */
 }
 
 *, *::before, *::after {
@@ -67,9 +72,9 @@ video::-webkit-media-text-track-display {
 }
 
 video::cue {
-  font-size: clamp(11px, 3.5vw, 24px);
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
+  font-size: var(--sub-size);
+  background: var(--sub-bg);
+  color: var(--sub-color);
   border-radius: 4px;
   padding: 4px 10px;
   font-family: 'Inter', sans-serif;

@@ -213,6 +213,36 @@
                   Captions
                 </button>
                 <div id="sub-options" class="menu-options" style="padding-bottom: 8px;"></div>
+                <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:4px 14px;">
+                <button class="settings-item" id="btn-open-sub-settings" style="margin-bottom:8px;">
+                  <span>Subtitle Settings</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+
+              <!-- Subtitle Settings Panel -->
+              <div id="panel-sub-settings" class="settings-panel hidden">
+                <button class="settings-back-btn" id="btn-back-sub-settings">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  Subtitle Settings
+                </button>
+                <div class="menu-options" id="sub-settings-options" style="padding-bottom: 8px; max-height: 250px; overflow-y: auto;">
+                  <div class="menu-title" style="padding: 8px 14px 4px; font-size: 11px; opacity: 0.7;">COLOR</div>
+                  <button class="menu-option sub-opt-color" data-val="#ffffff">White</button>
+                  <button class="menu-option sub-opt-color" data-val="#ffff00">Yellow</button>
+                  <button class="menu-option sub-opt-color" data-val="#00ffff">Cyan</button>
+                  <button class="menu-option sub-opt-color" data-val="#00ff00">Green</button>
+                  
+                  <div class="menu-title" style="padding: 8px 14px 4px; font-size: 11px; opacity: 0.7;">BACKGROUND</div>
+                  <button class="menu-option sub-opt-bg" data-val="rgba(0, 0, 0, 0)">Transparent</button>
+                  <button class="menu-option sub-opt-bg" data-val="rgba(0, 0, 0, 0.75)">Semi-Transparent</button>
+                  <button class="menu-option sub-opt-bg" data-val="rgba(0, 0, 0, 1)">Solid Black</button>
+                  
+                  <div class="menu-title" style="padding: 8px 14px 4px; font-size: 11px; opacity: 0.7;">SIZE</div>
+                  <button class="menu-option sub-opt-size" data-val="clamp(10px, 2.5vw, 18px)">Small</button>
+                  <button class="menu-option sub-opt-size" data-val="clamp(12px, 3.5vw, 24px)">Normal</button>
+                  <button class="menu-option sub-opt-size" data-val="clamp(16px, 4.5vw, 32px)">Large</button>
+                </div>
               </div>
 
             </div>

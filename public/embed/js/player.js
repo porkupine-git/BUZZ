@@ -134,6 +134,10 @@
   const btnFullscreen = $("btn-fullscreen");
   const iconExpand = $("icon-expand");
   const iconCompress = $("icon-compress");
+  const btnOpenSubSettings = $("btn-open-sub-settings");
+  const panelSubSettings = $("panel-sub-settings");
+  const btnBackSubSettings = $("btn-back-sub-settings");
+  const subSettingsOptions = $("sub-settings-options");
 
 
   // ─── State ──────────────────────────────────────────────────
@@ -152,6 +156,23 @@
   let currentQualityLevel = -1; // auto
   let activeSubTrack = -1;
   let isAutoSkip = localStorage.getItem("aniko_autoskip") === "true"; // Default false
+  
+  let subColor = localStorage.getItem("aniko_sub_color") || "#ffffff";
+  let subBg = localStorage.getItem("aniko_sub_bg") || "rgba(0, 0, 0, 0.75)";
+  let subSize = localStorage.getItem("aniko_sub_size") || "clamp(10px, 2.5vw, 18px)";
+
+  function applySubtitleSettings() {
+    document.documentElement.style.setProperty("--sub-color", subColor);
+    document.documentElement.style.setProperty("--sub-bg", subBg);
+    document.documentElement.style.setProperty("--sub-size", subSize);
+    
+    if (subSettingsOptions) {
+      subSettingsOptions.querySelectorAll(".sub-opt-color").forEach(b => b.classList.toggle("active", b.dataset.val === subColor));
+      subSettingsOptions.querySelectorAll(".sub-opt-bg").forEach(b => b.classList.toggle("active", b.dataset.val === subBg));
+      subSettingsOptions.querySelectorAll(".sub-opt-size").forEach(b => b.classList.toggle("active", b.dataset.val === subSize));
+    }
+  }
+  applySubtitleSettings();
 
   // ─── Utilities ──────────────────────────────────────────────
   function formatTime(s) {
@@ -496,6 +517,7 @@
       panelQuality.classList.add("hidden");
       panelAutoSkip.classList.add("hidden");
       if (panelSubs) panelSubs.classList.add("hidden");
+      if (panelSubSettings) panelSubSettings.classList.add("hidden");
     }
     activeMenu = null;
   }
@@ -532,7 +554,41 @@
         panelSubs.classList.add("hidden");
         panelMain.classList.remove("hidden");
       });
+      if (btnOpenSubSettings) {
+        btnOpenSubSettings.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panelSubs.classList.add("hidden");
+          panelSubSettings.classList.remove("hidden");
+        });
+        btnBackSubSettings.addEventListener("click", (e) => {
+          e.stopPropagation();
+          panelSubSettings.classList.add("hidden");
+          panelSubs.classList.remove("hidden");
+        });
+      }
     }
+  }
+
+  // Subtitle Settings Selection
+  if (subSettingsOptions) {
+    subSettingsOptions.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const target = e.target.closest(".menu-option");
+      if (!target) return;
+      
+      const val = target.dataset.val;
+      if (target.classList.contains("sub-opt-color")) {
+        subColor = val;
+        localStorage.setItem("aniko_sub_color", val);
+      } else if (target.classList.contains("sub-opt-bg")) {
+        subBg = val;
+        localStorage.setItem("aniko_sub_bg", val);
+      } else if (target.classList.contains("sub-opt-size")) {
+        subSize = val;
+        localStorage.setItem("aniko_sub_size", val);
+      }
+      applySubtitleSettings();
+    });
   }
 
   btnServers.addEventListener("click", (e) => {
