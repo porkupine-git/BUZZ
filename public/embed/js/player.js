@@ -814,21 +814,56 @@
 
     if (Hls.isSupported()) {
       hls = new Hls({
-        maxLoadingDelay: 4,
-        maxBufferLength: 60,
-        maxMaxBufferLength: 120,
-        enableWorker: true,
-        lowLatencyMode: false,
-        capLevelToPlayerSize: true,
-        fragLoadingTimeOut: 30000,
-        manifestLoadingTimeOut: 30000,
-        fragLoadingMaxRetry: 6,
+        // ─── Fast Start: keep initial buffer tiny so playback begins ASAP ───
+        maxBufferLength: 10,           // Only buffer 10s ahead (enough for smooth play)
+        maxMaxBufferLength: 30,        // Never exceed 30s buffer even on fast networks
+        maxBufferSize: 30 * 1000000,   // 30 MB max buffer size (saves RAM on mobile)
+        maxBufferHole: 0.5,            // Tolerate 0.5s gaps without stalling
+
+        // ─── Back-Buffer: prune watched segments to save memory ────────────
+        backBufferLength: 15,          // Keep only 15s of already-watched video
+
+        // ─── Start at lowest quality, ABR auto-upgrades quickly ────────────
+        startLevel: 0,                 // Start at lowest quality = instant first frame
+        capLevelToPlayerSize: true,    // Don't load 1080p on a 360p viewport
+        startFragPrefetch: true,       // Prefetch first fragment during manifest parse
+
+        // ─── ABR tuned for slow / unstable networks ───────────────────────
+        abrEwmaDefaultEstimate: 500000,       // Assume 500kbps initially (conservative)
+        abrEwmaFastLive: 3.0,                 // Fast upward bandwidth estimation
+        abrEwmaSlowLive: 9.0,                 // Slow downward estimation (don't drop quality too fast)
+        abrEwmaFastVoD: 3.0,
+        abrEwmaSlowVoD: 9.0,
+        abrBandWidthFactor: 0.8,              // Use 80% of measured bandwidth (safety margin)
+        abrBandWidthUpFactor: 0.5,            // Be cautious when upgrading quality
+
+        // ─── Network resilience: aggressive retries with backoff ──────────
+        fragLoadingTimeOut: 20000,     // 20s timeout per fragment
+        fragLoadingMaxRetry: 8,        // Retry up to 8 times
+        fragLoadingRetryDelay: 500,    // Start retry after 500ms
+        fragLoadingMaxRetryTimeout: 16000, // Max 16s between retries (progressive backoff)
+        manifestLoadingTimeOut: 15000, // 15s for manifest
         manifestLoadingMaxRetry: 6,
-        startLevel: -1,
+        manifestLoadingRetryDelay: 500,
+        manifestLoadingMaxRetryTimeout: 8000,
+        levelLoadingTimeOut: 15000,
+        levelLoadingMaxRetry: 6,
+        levelLoadingRetryDelay: 500,
+        levelLoadingMaxRetryTimeout: 8000,
+
+        // ─── Performance ──────────────────────────────────────────────────
+        enableWorker: true,            // Offload demuxing to Web Worker
+        lowLatencyMode: false,         // VoD content, no need for low-latency
+        progressive: true,             // Stream fragments as they download
+        maxLoadingDelay: 2,            // Max 2s loading delay before ABR switches down
+        testBandwidth: true,           // Measure real bandwidth from first fragment
       });
 
       hls.loadSource(url);
       hls.attachMedia(video);
+
+      // Track stall recovery attempts
+      let mediaRecoveryAttempts = 0;
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
         hideLoading();
@@ -836,27 +871,52 @@
         addSubtitleTracks();
         if (!video.paused) {
           video.play().catch(() => {
-            // Autoplay blocked by browser. Leave it paused with sound on.
             console.log("Autoplay with sound was blocked by the browser. Waiting for user interaction.");
           });
         }
+      });
+
+      // Hide loading as soon as the first fragment is buffered
+      hls.on(Hls.Events.FRAG_BUFFERED, () => {
+        hideLoading();
       });
 
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
           console.error("HLS fatal error:", data.type, data.details);
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            // Try next server
-            if (currentStreamIndex < hlsStreams.length - 1) {
+            // Attempt recovery first, then try next server
+            if (mediaRecoveryAttempts < 2) {
+              mediaRecoveryAttempts++;
+              console.log(`Network recovery attempt ${mediaRecoveryAttempts}...`);
+              hls.startLoad();
+            } else if (currentStreamIndex < hlsStreams.length - 1) {
+              mediaRecoveryAttempts = 0;
               console.log("Trying next server...");
               loadStream(currentStreamIndex + 1);
             } else {
               showError("Stream failed. Please try another server.");
             }
           } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-            hls.recoverMediaError();
+            if (mediaRecoveryAttempts < 2) {
+              mediaRecoveryAttempts++;
+              console.log(`Media recovery attempt ${mediaRecoveryAttempts}...`);
+              hls.recoverMediaError();
+            } else {
+              // Last resort: swap audio codec
+              mediaRecoveryAttempts = 0;
+              hls.swapAudioCodec();
+              hls.recoverMediaError();
+            }
           } else {
             showError("Playback error");
+          }
+        } else {
+          // Non-fatal errors: handle buffer stalls gracefully
+          if (data.details === 'bufferStalledError') {
+            console.log("Buffer stalled, nudging playback...");
+            // HLS.js handles nudge internally, just show loading
+            showLoading();
           }
         }
       });
