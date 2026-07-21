@@ -113,7 +113,7 @@ if (process.env.EMBED_URL) {
   } catch (e) { }
 }
 
-const ALLOWED_DOMAINS = envDomain ? [envDomain, 'localhost', '127.0.0.1', 'anixo.buzz'] : ['localhost', '127.0.0.1', 'anixo.buzz'];
+const ALLOWED_DOMAINS = envDomain ? [envDomain, 'localhost', '127.0.0.1', 'anixo.buzz', 'anixo.online'] : ['localhost', '127.0.0.1', 'anixo.buzz', 'anixo.online'];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin || req.headers.referer;
