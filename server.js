@@ -351,7 +351,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res) => {
   res.json({
     status: "ok",
-    message: "Aniko Embed Provider is active! 🚀",
+    message: "AniXo Embed Provider is active! 🚀",
     docs: "/",
     usage: "/embed/ani/:anilistId/:epNum/:audio"
   });
@@ -381,5 +381,5 @@ app.get('/api/debug/fs', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n  🎬 Aniko running at http://localhost:${PORT}\n`);
+  console.log(`\n  🎬 AniXo running at http://localhost:${PORT}\n`);
 });
