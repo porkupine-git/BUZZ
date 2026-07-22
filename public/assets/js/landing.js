@@ -26,6 +26,81 @@
       });
     });
 
+    // ─── Background Anime Cards (Jikan API) ────
+    async function loadBackgroundAnimeCards() {
+      const fallbackImages = [
+        "https://cdn.myanimelist.net/images/anime/1015/138006.jpg", // Frieren
+        "https://cdn.myanimelist.net/images/anime/1208/94745.jpg",  // Attack on Titan
+        "https://cdn.myanimelist.net/images/anime/1286/99889.jpg",  // Demon Slayer
+        "https://cdn.myanimelist.net/images/anime/1935/127974.jpg", // Chainsaw Man
+        "https://cdn.myanimelist.net/images/anime/1171/109222.jpg", // Jujutsu Kaisen
+        "https://cdn.myanimelist.net/images/anime/1141/142503.jpg", // Solo Leveling
+        "https://cdn.myanimelist.net/images/anime/1908/135007.jpg", // Oshi no Ko
+        "https://cdn.myanimelist.net/images/anime/10/47347.jpg",    // Hunter x Hunter
+        "https://cdn.myanimelist.net/images/anime/5/73723.jpg",     // Monster
+        "https://cdn.myanimelist.net/images/anime/13/17405.jpg",    // Naruto Shippuden
+        "https://cdn.myanimelist.net/images/anime/6/73245.jpg",     // Steins;Gate
+        "https://cdn.myanimelist.net/images/anime/3/40409.jpg",     // Gintama
+        "https://cdn.myanimelist.net/images/anime/1337/93786.jpg",   // One Piece
+        "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",   // Fullmetal Alchemist Brotherhood
+        "https://cdn.myanimelist.net/images/anime/11/39717.jpg"     // Death Note
+      ];
+
+      let imageUrls = [];
+
+      try {
+        const response = await fetch('https://api.jikan.moe/v4/top/anime?limit=25');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.data) {
+            imageUrls = data.data
+              .map(item => item.images?.jpg?.large_image_url || item.images?.jpg?.image_url)
+              .filter(Boolean);
+          }
+        }
+      } catch (e) {
+        console.warn('Jikan API fetch failed or rate-limited, using fallback images', e);
+      }
+
+      if (!imageUrls.length) {
+        imageUrls = fallbackImages;
+      }
+
+      // Shuffle images function
+      const shuffle = array => [...array].sort(() => Math.random() - 0.5);
+
+      const rows = [
+        document.getElementById('anime-row-1'),
+        document.getElementById('anime-row-2'),
+        document.getElementById('anime-row-3'),
+        document.getElementById('anime-row-4'),
+        document.getElementById('anime-row-5')
+      ].filter(Boolean);
+
+      rows.forEach((row, rowIndex) => {
+        const shuffledImages = shuffle(imageUrls);
+        // Duplicate set twice so marquee scroll is completely seamless
+        const listToRender = [...shuffledImages, ...shuffledImages, ...shuffledImages];
+
+        const fragment = document.createDocumentFragment();
+        listToRender.forEach(url => {
+          const card = document.createElement('div');
+          card.className = 'anime-card-bg';
+          const img = document.createElement('img');
+          img.src = url;
+          img.loading = 'lazy';
+          img.alt = 'Anime background card';
+          card.appendChild(img);
+          fragment.appendChild(card);
+        });
+
+        row.appendChild(fragment);
+      });
+    }
+
+    // Initialize background cards
+    loadBackgroundAnimeCards();
+
     // ─── Playground Logic ─────────────────────
     const tryAnilist = document.getElementById('try-anilist');
     const tryEpisode = document.getElementById('try-episode');
