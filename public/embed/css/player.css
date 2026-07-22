@@ -274,24 +274,7 @@ video::cue {
   max-width: 60%;
 }
 
-.watermark {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  z-index: 20;
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  transition: color var(--transition);
-  pointer-events: auto;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-}
 
-.watermark:hover {
-  color: rgba(255, 255, 255, 0.7);
-}
 
 /* ─── Skip Buttons ───────────────────────────────────────────── */
 .skip-btn {
@@ -653,9 +636,7 @@ video::cue {
     font-size: 12px;
   }
 
-  .watermark {
-    font-size: 9px;
-  }
+
 
   .skip-btn {
     bottom: 70px;
