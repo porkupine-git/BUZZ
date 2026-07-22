@@ -64,18 +64,19 @@
       flex-direction: column;
       gap: 16px;
       transform: rotate(-7deg) scale(1.05);
-      opacity: 0.18;
+      opacity: 0.38;
       pointer-events: none;
       z-index: 0;
       overflow: hidden;
-      filter: saturate(1.2) contrast(1.1);
+      filter: saturate(1.1);
       user-select: none;
+      contain: layout paint;
     }
 
     .anime-bg__overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(9, 9, 11, 0.65) 0%, rgba(9, 9, 11, 0.95) 75%, #09090b 100%);
+      background: radial-gradient(circle at center, rgba(9, 9, 11, 0.5) 0%, rgba(9, 9, 11, 0.88) 75%, #09090b 100%);
       pointer-events: none;
       z-index: 0;
     }
@@ -85,35 +86,36 @@
       gap: 16px;
       width: max-content;
       will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
     }
 
     .anime-bg__row--1 {
-      animation: scroll-left 55s linear infinite;
+      animation: scroll-left 60s linear infinite;
     }
     .anime-bg__row--2 {
-      animation: scroll-right 65s linear infinite;
+      animation: scroll-right 70s linear infinite;
     }
     .anime-bg__row--3 {
-      animation: scroll-left 70s linear infinite;
+      animation: scroll-left 75s linear infinite;
     }
     .anime-bg__row--4 {
-      animation: scroll-right 60s linear infinite;
+      animation: scroll-right 65s linear infinite;
     }
     .anime-bg__row--5 {
-      animation: scroll-left 80s linear infinite;
+      animation: scroll-left 85s linear infinite;
     }
 
     .anime-card-bg {
-      width: 140px;
-      height: 200px;
-      border-radius: 10px;
+      width: 130px;
+      height: 185px;
+      border-radius: 8px;
       overflow: hidden;
       flex-shrink: 0;
       position: relative;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       background: #18181b;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      transition: opacity 0.4s ease;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      contain: strict;
     }
 
     .anime-card-bg img {
@@ -124,13 +126,13 @@
     }
 
     @keyframes scroll-left {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
     }
 
     @keyframes scroll-right {
-      0% { transform: translateX(-50%); }
-      100% { transform: translateX(0); }
+      0% { transform: translate3d(-50%, 0, 0); }
+      100% { transform: translate3d(0, 0, 0); }
     }
 
     /* ─── Glow Orbs ───────────────────────── */
